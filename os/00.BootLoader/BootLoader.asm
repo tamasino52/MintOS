@@ -2,12 +2,12 @@
 # date      2008/11/27
 # author    kkamagui 
 #           Copyright(c)2008 All rights reserved by kkamagui
-# brief     MINT64
+# brief     MINT64		;Bootloader Source file of OS
 
-[ORG 0x00]
-[BITS 16]
+[ORG 0x00]			;Start Address of Code
+[BITS 16]			;16Bits Code Under this line
 TOTALSECTORCOUNT : dw 1024
-SECTION .text
+SECTION .text			;text Segment define
 
 jmp 0x07c0:START
 
@@ -190,42 +190,47 @@ START:
 	shr ax,8
 	push ax
 
-RESETDISK:
-	;-------------------;
-	;BIOS Reset Function;
-	;-------------------;
 
+;--Load OS Image from Disk---------------;
+;--Reset Disk before reading-------------;
+RESETDISK:
+
+	;---BIOS Reset Function Call-------------;
+	;---Service number 0, Drive number (0=Floppy)-------;
 	mov ax, 0
 	mov dl, 0              
 	int 0x13     
 
+	;---Error Exception, if error occurs then jump Error Handler--------;
 	jc  HANDLEDISKERROR
         
-	mov si, 0x1000                  ; OS
-	mov es, si                      ; ES
-	mov bx, 0x0000                  ; BX
-                              
+	;---Read Sector from disk--------;
+	;---Memory address to copy contents of disk to memory is 0x10000---------;
+	mov si, 0x1000                  ; Change address(0x10000) to copy OS image
+					; into segment register value
+	mov es, si                      ; Set ES segment register value
+	mov bx, 0x0000                  ; Copy address 0x0000 to BX register
+					; Final setting :: Address 0x1000:0000(0x10000)  
 	mov di, word [ TOTALSECTORCOUNT ]
 
+;---Read Disk Part-----------;
 READDATA:                       
-
 	cmp di, 0             
 	je  READEND            
 	sub di, 0x1            
 
-	;-------------------;
-	; BIOS Read Function;
-	;-------------------;
-	mov ah, 0x02                        ; BIOS (Read Sector)
-	mov al, 0x1                         
-	mov ch, byte [ TRACKNUMBER ]        
-	mov cl, byte [ SECTORNUMBER ]       
-	mov dh, byte [ HEADNUMBER ]         
-	mov dl, 0x00                        
-	int 0x13                            
-	jc HANDLEDISKERROR                  
+	;---BIOS Read Function Call----------------;
+	mov ah, 0x02                        ; BIOS service num 2 (Read Sector)
+	mov al, 0x1                         ; Number of read sector is 1
+	mov ch, byte [ TRACKNUMBER ]        ; Track num setting
+	mov cl, byte [ SECTORNUMBER ]       ; Sector num setting
+	mov dh, byte [ HEADNUMBER ]         ; Head num setting
+	mov dl, 0x00                        ; Drive num setting (0=Floppy)
+	int 0x13                            ; Interrupt Service Activate
+	jc HANDLEDISKERROR                  ; Error Exception
     
-	add si, 0x0020      
+	;---Track, Head, Sector Address-----------------;
+	add si, 0x0020				
                         
 	mov es, si          
     
@@ -245,9 +250,12 @@ READDATA:
 	jmp READDATA                        
 
 
+;---Print message "complete to load OS image"-----------;
+;---Excute loaded OS image-----------;
 READEND:
 	jmp 0x1000:0x0000
     
+;Error Exception handler
 HANDLEDISKERROR:
 	jmp $
         
