@@ -86,6 +86,34 @@ PROTECTEDMODE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 데이터
+
+Date_Mod db '14 May 2010 v. 2r5 ',0
+Signon db '*** Testing INT 15h AX=E820h Big Memory '
+       db 'Services - System Memory Map ***',0
+Fn_na db 'Sorry, unsupported Fn, Int 15h EAX=E820',0
+Mbase db ' <-Base  ',0
+Mlen  db ' <-Length  ',0
+Mtype db ' <-Type  ',0
+Mtypes db ' Types: 1=Avail. to OS, 2=Not Avail., '
+   db '3=ACPI Avail. to OS, 4=NVS Not Avail.',0
+
+Fn_nak_E801 db 'Sorry, unsupported Fn, Int 15h EAX=E801',0
+Fn_ack_E801 db ' Supported Fn, Int 15h EAX=E801',0
+
+Fn_nak_E881 db 'Sorry, unsupported Fn, Int 15h EAX=E881',0
+Fn_ack_E881 db ' Supported Fn, Int 15h EAX=E881',0
+
+strEAX db 'EAX=',0
+strEBX db 'EBX=',0
+strECX db 'ECX=',0
+strEDX db 'EDX=',0
+
+valEAX dd 0
+valEBX dd 0
+valECX dd 0
+valEDX dd 0
+
 
 ; 버퍼사이즈 인터럽트 함수
 ;;--------------------------------------------------------60
@@ -253,6 +281,14 @@ putstr:  ;;Str Offset supplied in EDX
   jmp  short putstr
 endstr:
   RET
+
+
+buffer:  TIMES 200h db 0
+stkbase: TIMES 80h dw 0
+stktop:
+
+
+
 
 ; 메시지를 출력하는 함수
 ;   스택에 x 좌표, y 좌표, 문자열
