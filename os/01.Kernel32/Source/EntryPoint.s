@@ -60,6 +60,20 @@ START:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 [BITS 32]               ; 이하의 코드는 32비트 코드로 설정
 PROTECTEDMODE:
+	mov  eax, 0E820h
+	mov  edx, 534D4150h	; 'SMAP'
+	mov  ecx, 20		;; length of packet
+	int  15h
+
+	push ecx
+	push 15
+	push 0
+	call PRINTMESSAGE
+	add esp, 12
+
+
+
+
     mov ax, 0x20        ; 보호 모드 커널용 데이터 세그먼트 디스크립터를 AX 레지스터에 저장
     mov ds, ax          ; DS 세그먼트 셀렉터에 설정
     mov es, ax          ; ES 세그먼트 셀렉터에 설정
@@ -79,16 +93,7 @@ PROTECTEDMODE:
     add esp, 12                                     ; 삽입한 파라미터 제거
 
 
-	mov  eax, 0E820h
-	mov  edx, 534D4150h	; 'SMAP'
-	mov  ecx, 20		;; length of packet
-	int  15h
 
-	push ecx
-	push 15
-	push 0
-	call PRINTMESSAGE
-	add esp, 12
 
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
