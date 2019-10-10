@@ -65,11 +65,8 @@ PROTECTEDMODE:
 	mov  ecx, 20		;; length of packet
 	int  15h
 
-	push ecx
-	push 15
-	push 0
-	call PRINTMESSAGE
-	add esp, 12
+	mov eax, ecx
+	int 0x80
 
 
 
