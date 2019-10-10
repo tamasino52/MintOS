@@ -115,6 +115,12 @@ valECX dd 0
 valEDX dd 0
 
 
+struc mm_ent
+     .base resq 1
+     .len resq 1
+     .type resd 1
+endstruc
+
 ; 버퍼사이즈 인터럽트 함수
 ;;--------------------------------------------------------60
 E820:
