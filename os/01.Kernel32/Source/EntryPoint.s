@@ -86,7 +86,6 @@ PROTECTEDMODE:
 	; 메모리 사이즈 출력
 	mov ax, cx
 	mov cx, 0
-.loop:
 	mov bx, 10
 	mov dx, 0
     div bx                          ;divide by ten
@@ -95,14 +94,10 @@ PROTECTEDMODE:
     ;     dx <-- ax % 10
 
     add dx, '0'                     ;convert dl to ascii
-	push dx
+	push memorysize
 	push 3
-	push cx
+	push 0
 	call PRINTMESSAGE
-	add esp, 12
-	add cx, 1
-    cmp ax, 0                       ;if ax is zero, we can quit
-	jnz .loop
 
 
 
@@ -178,6 +173,9 @@ PRINTMESSAGE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 아래의 데이터들을 8byte에 맞춰 정렬하기 위해 추가
 align 8, db 0
+
+; 메모리 사이즈
+memorysize: db "00MB", 0
 
 ; GDTR의 끝을 8byte로 정렬하기 위해 추가
 dw 0x0000
