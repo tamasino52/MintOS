@@ -78,7 +78,14 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 
-	call E820
+
+	mov  eax, 0E820h
+	mov  edx, 534D4150h	; 'SMAP'
+	mov  ecx, 20		;; length of packet
+	int  15h
+
+	call showeax
+
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
@@ -91,17 +98,6 @@ struc mm_ent
      .len resq 1
      .type resd 1
 endstruc
-
-;;--------------------------------------------------------60
-;; M A I N
-;;--------------------------------------------------------60
-
-;;---exit program---
-alldone:
-  xor eax, eax
-  int 16h
-  int 19h
-
 ;;--------------------------------------------------------60
 ;; D A T A
 ;;--------------------------------------------------------60
@@ -132,149 +128,6 @@ valEBX dd 0
 valECX dd 0
 valEDX dd 0
 
-;;----EO DSeg--------
-;;--EO FNL--
-;; # ref sept 27 2005 comp.lang.asm.x86 #
-;;Dunno if it's correct - here's what I've got. This uses 
-;;dos - change the display function for bios...
-;;Best,
-;;Frank Kotler
-;;--------------------------------------------------------60
-;;----Subroutines----
-;;--------------------------------------------------------60
-;;section .text
-;; Usage Notes:
-;; - Call E820 w/ EBX continuation val=0 initially
-;;  -ES:DI Addr of Addr Range Descriptor
-;;  -ECX length of Addr Range Descriptor =>20bytes
-;;  -EDX 'SMAP' signature
-;; On Ret from this Call - CF=0 means E820 supported
-;;  -EAX = 'SMAP' str
-;;  -ES:DI same as entry
-;;  -ECX = length of actual reported info bytes
-;;  -EBX = next continuation value, else = 0
-;;  -Next continuation value required for next call
-;;
-;;--------------------------------------------------------60
-  [SECTION .cseg]
-
-;;--------------------------------------------------------60
-;; Int 15h Big Memory Services ck Fn AL`01h
-E801:
-  mov  eax, 0E801h
-  int  15h
-  jc   err_E801
-
-  mov  [valEAX], eax
-  mov  [valEBX], ebx
-  mov  [valECX], ecx
-  mov  [valEDX], edx
-
-  mov  edx, Fn_ack_E801
-  call putstr
-  call newline
-
-  call dmp4regs
-
-  RET
-
-err_E801:
-  mov  edx, Fn_nak_E801
-  call putstr
-  call newline
-  RET
-
-;;--------------------------------------------------------60
-;; Int 15h Big Memory Services ck Fn AL`81h
-E881:
-  mov  eax, 0E881h
-  int  15h
-  jc   err_E881
-
-  mov  [valEAX], eax
-  mov  [valEBX], ebx
-  mov  [valECX], ecx
-  mov  [valEDX], edx
-
-  mov  edx, Fn_ack_E881
-  call putstr
-  call newline
-
-  call dmp4regs
-
-  RET
-
-err_E881:
-  mov  edx, Fn_nak_E881
-  call putstr
-  call newline
-  RET
-
-;;--------------------------------------------------------60
-;; Int 15h Big Memory Services ck Fn AL`20h
-E820:
-  mov  edx, Signon
-  call putstr
-  call newline
-
-  clc				;; just in case..
-  mov  edi, buffer	;; offset re dseg
-  xor  ebx, ebx
-  xor  esi, esi		; counter
-.top:
-  mov  eax, 0E820h
-  mov  edx, 534D4150h	; 'SMAP'
-  mov  ecx, 20		;; length of packet
-  int  15h
-  jc   error
-  inc  esi			; bump counter
-  add  edi, ecx
-  or   ebx, ebx		;; test continuation value=0
-  jz   done
-  jmp  short .top		;; loop, building map table
-done:
-  mov  ecx, esi		; count
-  mov  esi, buffer
-
-show:		;;retrieve values from table & print them.
-  mov  eax, [esi + mm_ent.base + 4]
-  call showeax
-  call separator
-  mov  eax, [esi + mm_ent.base]
-  call showeax
-  mov  edx, Mbase
-  call putstr
-
-  mov  eax, [esi + mm_ent.len + 4]
-  call showeax
-  call separator
-  mov  eax, [esi + mm_ent.len]
-  call showeax
-  mov  edx, Mlen
-  call putstr
-
-  mov  eax, [esi + mm_ent.type]
-  call showeax
-  mov  edx, Mtype
-  call putstr
-  call newline
-
-  add  esi, mm_ent_size
-  loop show
-     ;;---eoshow---
-
-  mov  edx, Mtypes
-  call putstr
-
-  jmp  exit
-
-error:	;; report unsupported Fn
-  mov  edx, Fn_na
-  call putstr
-  call newline
-
-exit:
-  RET
 
 ;;--------------------------------------------------------60
 ;; U t i l i t y   F n ' s
