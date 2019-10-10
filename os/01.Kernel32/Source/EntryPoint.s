@@ -78,12 +78,182 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 
+	call E820
+
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; 버퍼사이즈 인터럽트 함수
+;;--------------------------------------------------------60
+E820:
+  mov  edx, Signon
+  call putstr
+  call newline
+
+  clc				;; just in case..
+  mov  edi, buffer	;; offset re dseg
+  xor  ebx, ebx
+  xor  esi, esi		; counter
+.top:
+  mov  eax, 0E820h
+  mov  edx, 534D4150h	; 'SMAP'
+  mov  ecx, 20		;; length of packet
+  int  15h
+  jc   error
+  inc  esi			; bump counter
+  add  edi, ecx
+  or   ebx, ebx		;; test continuation value=0
+  jz   done
+  jmp  short .top		;; loop, building map table
+done:
+  mov  ecx, esi		; count
+  mov  esi, buffer
+
+show:		;;retrieve values from table & print them.
+  mov  eax, [esi + mm_ent.base + 4]
+  call showeax
+  call separator
+  mov  eax, [esi + mm_ent.base]
+  call showeax
+  mov  edx, Mbase
+  call putstr
+
+  mov  eax, [esi + mm_ent.len + 4]
+  call showeax
+  call separator
+  mov  eax, [esi + mm_ent.len]
+  call showeax
+  mov  edx, Mlen
+  call putstr
+
+  mov  eax, [esi + mm_ent.type]
+  call showeax
+  mov  edx, Mtype
+  call putstr
+  call newline
+
+  add  esi, mm_ent_size
+  loop show
+  ;;---eoshow---
+
+  mov  edx, Mtypes
+  call putstr
+
+  jmp  exit
+
+error:	;; report unsupported Fn
+  mov  edx, Fn_na
+  call putstr
+  call newline
+
+exit:
+  RET
+
+Signon db '*** Testing INT 15h AX=E820h Big Memory '
+    db 'Services - System Memory Map ***',0
+
+;;--------------------------------------------------------60
+;; 유틸리티
+;;--------------------------------------------------------60
+dmp4regs:
+
+  mov  edx, strEAX
+  call putstr
+  mov  eax, [valEAX]
+  call showeax
+  call virtbar
+
+  mov  edx, strEBX
+  call putstr
+  mov  eax, [valEBX]
+  call showeax
+  call virtbar
+
+  mov  edx, strECX
+  call putstr
+  mov  eax, [valECX]
+  call showeax
+  call virtbar
+
+  mov  edx, strEDX
+  call putstr
+  mov  eax, [valEDX]
+  call showeax
+  call newline
+  call newline
+
+  RET
+;------------------
+showeax:
+  push cx
+  mov  cx, 8
+.top:
+  rol  eax, 4
+  push eax
+  and  al, 0Fh
+  cmp  al, 0Ah
+  sbb  al, 69h
+  das
+  call putc
+  pop  eax
+  loop .top
+  pop  cx
+  RET
+;-------------------
+separator:
+  push ax
+  mov  al, 27h
+  call putc
+  pop  ax
+  RET
+;-------------------
+virtbar:
+  push ax
+  mov  al, 7Ch
+  call putc
+  pop  ax
+  RET
+;-------------------
+newline:
+  push ax
+  mov  al, 13
+  call putc
+  mov  al, 10
+  call putc
+  pop  ax
+  RET
+;--------------------
+tab:
+  push ax
+  mov  al,9
+  call putc
+  pop  ax
+  RET
+;--------------------
+putc:  ;; chr arrives in AL
+  pusha
+
+  mov  ah, 0Eh ;; Fn tty
+  mov  ebx, 0  ;; BH pg no
+  int  10h
+
+  popa
+  RET
+;------------------
+putstr:  ;;Str Offset supplied in EDX
+  mov  al, [edx]
+  cmp  al, 0
+  jz   endstr
+  call putc
+  inc  edx
+  jmp  short putstr
+endstr:
+  RET
+
 ; 메시지를 출력하는 함수
 ;   스택에 x 좌표, y 좌표, 문자열
 PRINTMESSAGE:
