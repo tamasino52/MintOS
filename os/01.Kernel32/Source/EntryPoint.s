@@ -26,6 +26,9 @@ START:
     mov ax, 0x2401          ; A20 게이트 활성화 서비스 설정
     int 0x15                ; BIOS 인터럽트 서비스 호출
 
+	mov ax, 0E820h
+	int 15h
+
     jc .A20GATEERROR        ; A20 게이트 활성화가 성공했는지 확인
     jmp .A20GATESUCCESS
 
@@ -60,15 +63,6 @@ START:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 [BITS 32]               ; 이하의 코드는 32비트 코드로 설정
 PROTECTEDMODE:
-	mov  eax, 0E820h
-	mov  edx, 534D4150h	; 'SMAP'
-	mov  ecx, 20		;; length of packet
-	int  15h
-
-	mov eax, ecx
-	int 0x80
-
-
 
 
     mov ax, 0x20        ; 보호 모드 커널용 데이터 세그먼트 디스크립터를 AX 레지스터에 저장
@@ -89,9 +83,11 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 
-
-
-
+	push ecx
+	push 3
+	push 0
+	call PRINTMESSAGE
+	add esp, 12                                     ; 삽입한 파라미터 제거
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
