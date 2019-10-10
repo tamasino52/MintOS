@@ -84,26 +84,29 @@ PROTECTEDMODE:
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
 	; 메모리 사이즈 출력
-	mov eax, ecx
-	shr eax, 4
-	add eax, 30h
 
-	push 0
+
+
+	mov ax, cx
+	shr ax, 15
+	add ax, 30h
+
+	push ax
 	push 3
 	push 0
 	call PRINTMESSAGE
-	add esp, 12                                     
+	add esp, 12
 
-	mov eax, ecx
-	and eax, 0x0f
-	add eax, 30h
+	mov ax, cx
+	shr ax, 14
+	and ax, 0x0001
+	add ax, 30h
 
-	push 1
+	push ax
 	push 3
 	push 1
 	call PRINTMESSAGE
-	add esp, 12                                     
-
+	add esp, 12
      
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
