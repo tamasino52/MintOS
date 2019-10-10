@@ -78,7 +78,7 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 
-	call memory
+	call E820
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
@@ -95,14 +95,6 @@ endstruc
 ;;--------------------------------------------------------60
 ;; M A I N
 ;;--------------------------------------------------------60
-  [SECTION .cseg vstart=100000h]
-use32
-
-memory:
-  mov  esp, stktop
-  call E801
-  call E881
-  call E820
 
 ;;---exit program---
 alldone:
