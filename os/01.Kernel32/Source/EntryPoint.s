@@ -84,21 +84,26 @@ PROTECTEDMODE:
     add esp, 12                                     ; 삽입한 파라미터 제거
 
 	mov eax, ecx
-	aam
-	add ah, 03030h
-	add al, 03030h
+	shr eax, 4
+	add eax, 30h
 
-	push ah
+	push eax
 	push 3
 	push 0
 	call PRINTMESSAGE
+	add esp, 12                                     
 
-	add esp, 12                                     ; 삽입한 파라미터 제거
-	push al
+	mov eax, ecx
+	and eax, 0f
+	add eax, 30h
+
+	push eax
 	push 3
-	push 1
+	push 0
 	call PRINTMESSAGE
-	add esp, 12      
+	add esp, 12                                     
+
+     
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
 
