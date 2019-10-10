@@ -181,8 +181,6 @@ error:	;; report unsupported Fn
 exit:
   RET
 
-Signon db '*** Testing INT 15h AX=E820h Big Memory '
-    db 'Services - System Memory Map ***',0
 
 ;;--------------------------------------------------------60
 ;; 유틸리티
