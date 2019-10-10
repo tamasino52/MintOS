@@ -78,7 +78,7 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 
-	call E820
+	call memory
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
@@ -86,8 +86,34 @@ PROTECTEDMODE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 데이터
+struc mm_ent
+     .base resq 1
+     .len resq 1
+     .type resd 1
+endstruc
 
+;;--------------------------------------------------------60
+;; M A I N
+;;--------------------------------------------------------60
+  [SECTION .cseg vstart=100000h]
+use32
+
+memory:
+  mov  esp, stktop
+  call E801
+  call E881
+  call E820
+
+;;---exit program---
+alldone:
+  xor eax, eax
+  int 16h
+  int 19h
+
+;;--------------------------------------------------------60
+;; D A T A
+;;--------------------------------------------------------60
+[SECTION .dseg vfollows=.cseg]
 Date_Mod db '14 May 2010 v. 2r5 ',0
 Signon db '*** Testing INT 15h AX=E820h Big Memory '
        db 'Services - System Memory Map ***',0
@@ -114,15 +140,86 @@ valEBX dd 0
 valECX dd 0
 valEDX dd 0
 
-
-struc mm_ent
-     .base resq 1
-     .len resq 1
-     .type resd 1
-endstruc
-
-; 버퍼사이즈 인터럽트 함수
+;;----EO DSeg--------
+;;--EO FNL--
+;; # ref sept 27 2005 comp.lang.asm.x86 #
+;;Dunno if it's correct - here's what I've got. This uses 
+;;dos - change the display function for bios...
+;;Best,
+;;Frank Kotler
 ;;--------------------------------------------------------60
+;;----Subroutines----
+;;--------------------------------------------------------60
+;;section .text
+;; Usage Notes:
+;; - Call E820 w/ EBX continuation val=0 initially
+;;  -ES:DI Addr of Addr Range Descriptor
+;;  -ECX length of Addr Range Descriptor =>20bytes
+;;  -EDX 'SMAP' signature
+;; On Ret from this Call - CF=0 means E820 supported
+;;  -EAX = 'SMAP' str
+;;  -ES:DI same as entry
+;;  -ECX = length of actual reported info bytes
+;;  -EBX = next continuation value, else = 0
+;;  -Next continuation value required for next call
+;;
+;;--------------------------------------------------------60
+  [SECTION .cseg]
+
+;;--------------------------------------------------------60
+;; Int 15h Big Memory Services ck Fn AL`01h
+E801:
+  mov  eax, 0E801h
+  int  15h
+  jc   err_E801
+
+  mov  [valEAX], eax
+  mov  [valEBX], ebx
+  mov  [valECX], ecx
+  mov  [valEDX], edx
+
+  mov  edx, Fn_ack_E801
+  call putstr
+  call newline
+
+  call dmp4regs
+
+  RET
+
+err_E801:
+  mov  edx, Fn_nak_E801
+  call putstr
+  call newline
+  RET
+
+;;--------------------------------------------------------60
+;; Int 15h Big Memory Services ck Fn AL`81h
+E881:
+  mov  eax, 0E881h
+  int  15h
+  jc   err_E881
+
+  mov  [valEAX], eax
+  mov  [valEBX], ebx
+  mov  [valECX], ecx
+  mov  [valEDX], edx
+
+  mov  edx, Fn_ack_E881
+  call putstr
+  call newline
+
+  call dmp4regs
+
+  RET
+
+err_E881:
+  mov  edx, Fn_nak_E881
+  call putstr
+  call newline
+  RET
+
+;;--------------------------------------------------------60
+;; Int 15h Big Memory Services ck Fn AL`20h
 E820:
   mov  edx, Signon
   call putstr
@@ -172,7 +269,7 @@ show:		;;retrieve values from table & print them.
 
   add  esi, mm_ent_size
   loop show
-  ;;---eoshow---
+     ;;---eoshow---
 
   mov  edx, Mtypes
   call putstr
@@ -187,9 +284,8 @@ error:	;; report unsupported Fn
 exit:
   RET
 
-
 ;;--------------------------------------------------------60
-;; 유틸리티
+;; U t i l i t y   F n ' s
 ;;--------------------------------------------------------60
 dmp4regs:
 
@@ -285,13 +381,17 @@ putstr:  ;;Str Offset supplied in EDX
   jmp  short putstr
 endstr:
   RET
-
-
-buffer:  TIMES 200h db 0
-stkbase: TIMES 80h dw 0
-stktop:
-
-
+;; -= Last but not Least, align =-
+align 16, db 0
+;;--------------------------------------------------------60
+;------------------
+  [SECTION  .dseg]
+  buffer:  TIMES 200h db 0
+  stkbase: TIMES 80h dw 0
+  stktop:
+;;--------------------------------------------------------60
+;;--eof--
+;;--------------------------------------------------------60
 
 
 ; 메시지를 출력하는 함수
