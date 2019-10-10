@@ -82,7 +82,8 @@ PROTECTEDMODE:
     push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
-
+	
+	; 메모리 사이즈 출력
 	mov eax, ecx
 	shr eax, 4
 	add eax, 30h
@@ -94,12 +95,12 @@ PROTECTEDMODE:
 	add esp, 12                                     
 
 	mov eax, ecx
-	and eax, 0f
+	and eax, 0x0f
 	add eax, 30h
 
 	push eax
 	push 3
-	push 0
+	push 1
 	call PRINTMESSAGE
 	add esp, 12                                     
 
