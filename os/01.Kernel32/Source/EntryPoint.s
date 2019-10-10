@@ -75,15 +75,9 @@ PROTECTEDMODE:
     mov ss, ax          ; SS 세그먼트 셀렉터에 설정
     mov esp, 0xFFFE     ; ESP 레지스터의 어드레스를 0xFFFE로 설정
     mov ebp, 0xFFFE     ; EBP 레지스터의 어드레스를 0xFFFE로 설정
-    
-    ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
-    push ( SWITCHSUCCESSMESSAGE - $$ + 0x10000 )    ; 출력할 메시지의 어드레스르 스택에 삽입
-    push 2                                          ; 화면 Y 좌표(2)를 스택에 삽입
-    push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
-    call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
-    add esp, 12                                     ; 삽입한 파라미터 제거
-	
-	; 메모리 사이즈 출력
+   
+   
+   	; 메모리 사이즈 출력
 	mov ax, cx
 	mov cx, 0
 	mov bx, 10
@@ -98,6 +92,16 @@ PROTECTEDMODE:
 	push 3
 	push 0
 	call PRINTMESSAGE
+	
+	 
+    ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
+    push ( SWITCHSUCCESSMESSAGE - $$ + 0x10000 )    ; 출력할 메시지의 어드레스르 스택에 삽입
+    push 2                                          ; 화면 Y 좌표(2)를 스택에 삽입
+    push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
+    call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
+    add esp, 12                                     ; 삽입한 파라미터 제거
+	
+
 
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
@@ -173,7 +177,7 @@ PRINTMESSAGE:
 align 8, db 0
 
 ; 메모리 사이즈
-memorysize: db "00MB", 0
+memorysize: db 'sdfsdfdsfdsfs~!!', 0
 
 ; GDTR의 끝을 8byte로 정렬하기 위해 추가
 dw 0x0000
