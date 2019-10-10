@@ -84,62 +84,26 @@ PROTECTEDMODE:
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
 	; 메모리 사이즈 출력
-
-
-
 	mov ax, cx
-	shr ax, 15
-	add ax, 30h
+	mov cx, 0
+.loop:
+	mov bx, 10
+	mov dx, 0
+    div bx                          ;divide by ten
 
-	push ax
+    ; now ax <-- ax/10
+    ;     dx <-- ax % 10
+
+    add dx, '0'                     ;convert dl to ascii
+	push dx
 	push 3
-	push 0
+	push cx
 	call PRINTMESSAGE
 	add esp, 12
+	add cx, 1
+    cmp ax, 0                       ;if ax is zero, we can quit
+	jnz .loop
 
-	mov ax, cx
-	shr ax, 14
-	and ax, 0x0001
-	add ax, 30h
-
-	push ax
-	push 3
-	push 1
-	call PRINTMESSAGE
-	add esp, 12
-
-	mov ax, cx
-	shr ax, 13
-	and ax, 0x0001
-	add ax, 30h
-
-	push ax
-	push 3
-	push 2
-	call PRINTMESSAGE
-	add esp, 12
-     
-	mov ax, cx
-	shr ax, 12
-	and ax, 0x0001
-	add ax, 30h
-
-	push ax
-	push 3
-	push 3
-	call PRINTMESSAGE
-	add esp, 12
-
-	mov ax, cx
-	shr ax, 11
-	and ax, 0x0001
-	add ax, 30h
-
-	push ax
-	push 3
-	push 4
-	call PRINTMESSAGE
-	add esp, 12
 
 
 
@@ -149,8 +113,6 @@ PROTECTEDMODE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 ; 메시지를 출력하는 함수
 ;   스택에 x 좌표, y 좌표, 문자열
