@@ -88,7 +88,7 @@ PROTECTEDMODE:
 	shr eax, 4
 	add eax, 30h
 
-	push eax
+	push 0
 	push 3
 	push 0
 	call PRINTMESSAGE
@@ -98,7 +98,7 @@ PROTECTEDMODE:
 	and eax, 0x0f
 	add eax, 30h
 
-	push eax
+	push 1
 	push 3
 	push 1
 	call PRINTMESSAGE
