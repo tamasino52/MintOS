@@ -85,7 +85,7 @@ PROTECTEDMODE:
 
 	push ecx
 	push 3
-	push 0
+	push 25
 	call PRINTMESSAGE
 	add esp, 12                                     ; 삽입한 파라미터 제거
 
