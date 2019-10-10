@@ -107,7 +107,42 @@ PROTECTEDMODE:
 	push 1
 	call PRINTMESSAGE
 	add esp, 12
+
+	mov ax, cx
+	shr ax, 13
+	and ax, 0x0001
+	add ax, 30h
+
+	push ax
+	push 3
+	push 2
+	call PRINTMESSAGE
+	add esp, 12
      
+	mov ax, cx
+	shr ax, 12
+	and ax, 0x0001
+	add ax, 30h
+
+	push ax
+	push 3
+	push 3
+	call PRINTMESSAGE
+	add esp, 12
+
+	mov ax, cx
+	shr ax, 11
+	and ax, 0x0001
+	add ax, 30h
+
+	push ax
+	push 3
+	push 4
+	call PRINTMESSAGE
+	add esp, 12
+
+
+
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
 
