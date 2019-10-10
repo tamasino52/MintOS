@@ -84,7 +84,11 @@ PROTECTEDMODE:
 	mov  ecx, 20		;; length of packet
 	int  15h
 
-	call showeax
+	push ecx
+	push 15
+	push 0
+	call PRINTMESSAGE
+	add esp, 12
 
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
@@ -93,150 +97,7 @@ PROTECTEDMODE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-struc mm_ent
-     .base resq 1
-     .len resq 1
-     .type resd 1
-endstruc
-;;--------------------------------------------------------60
-;; D A T A
-;;--------------------------------------------------------60
-[SECTION .dseg vfollows=.cseg]
-Date_Mod db '14 May 2010 v. 2r5 ',0
-Signon db '*** Testing INT 15h AX=E820h Big Memory '
-       db 'Services - System Memory Map ***',0
-Fn_na db 'Sorry, unsupported Fn, Int 15h EAX=E820',0
-Mbase db ' <-Base  ',0
-Mlen  db ' <-Length  ',0
-Mtype db ' <-Type  ',0
-Mtypes db ' Types: 1=Avail. to OS, 2=Not Avail., '
-   db '3=ACPI Avail. to OS, 4=NVS Not Avail.',0
 
-Fn_nak_E801 db 'Sorry, unsupported Fn, Int 15h EAX=E801',0
-Fn_ack_E801 db ' Supported Fn, Int 15h EAX=E801',0
-
-Fn_nak_E881 db 'Sorry, unsupported Fn, Int 15h EAX=E881',0
-Fn_ack_E881 db ' Supported Fn, Int 15h EAX=E881',0
-
-strEAX db 'EAX=',0
-strEBX db 'EBX=',0
-strECX db 'ECX=',0
-strEDX db 'EDX=',0
-
-valEAX dd 0
-valEBX dd 0
-valECX dd 0
-valEDX dd 0
-
-
-;;--------------------------------------------------------60
-;; U t i l i t y   F n ' s
-;;--------------------------------------------------------60
-dmp4regs:
-
-  mov  edx, strEAX
-  call putstr
-  mov  eax, [valEAX]
-  call showeax
-  call virtbar
-
-  mov  edx, strEBX
-  call putstr
-  mov  eax, [valEBX]
-  call showeax
-  call virtbar
-
-  mov  edx, strECX
-  call putstr
-  mov  eax, [valECX]
-  call showeax
-  call virtbar
-
-  mov  edx, strEDX
-  call putstr
-  mov  eax, [valEDX]
-  call showeax
-  call newline
-  call newline
-
-  RET
-;------------------
-showeax:
-  push cx
-  mov  cx, 8
-.top:
-  rol  eax, 4
-  push eax
-  and  al, 0Fh
-  cmp  al, 0Ah
-  sbb  al, 69h
-  das
-  call putc
-  pop  eax
-  loop .top
-  pop  cx
-  RET
-;-------------------
-separator:
-  push ax
-  mov  al, 27h
-  call putc
-  pop  ax
-  RET
-;-------------------
-virtbar:
-  push ax
-  mov  al, 7Ch
-  call putc
-  pop  ax
-  RET
-;-------------------
-newline:
-  push ax
-  mov  al, 13
-  call putc
-  mov  al, 10
-  call putc
-  pop  ax
-  RET
-;--------------------
-tab:
-  push ax
-  mov  al,9
-  call putc
-  pop  ax
-  RET
-;--------------------
-putc:  ;; chr arrives in AL
-  pusha
-
-  mov  ah, 0Eh ;; Fn tty
-  mov  ebx, 0  ;; BH pg no
-  int  10h
-
-  popa
-  RET
-;------------------
-putstr:  ;;Str Offset supplied in EDX
-  mov  al, [edx]
-  cmp  al, 0
-  jz   endstr
-  call putc
-  inc  edx
-  jmp  short putstr
-endstr:
-  RET
-;; -= Last but not Least, align =-
-align 16, db 0
-;;--------------------------------------------------------60
-;------------------
-  [SECTION  .dseg]
-  buffer:  TIMES 200h db 0
-  stkbase: TIMES 80h dw 0
-  stktop:
-;;--------------------------------------------------------60
-;;--eof--
-;;--------------------------------------------------------60
 
 
 ; 메시지를 출력하는 함수
