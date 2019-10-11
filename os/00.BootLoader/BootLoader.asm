@@ -165,14 +165,14 @@ READEND:
 	mov ax, 0E820h
 	mov dx, 534D4150h
 	int 15h
-	mov ax, dword[es:di+8]
+	mov ax, 18;dword[es:di+8]
 	jc .loopend
 
 	
 	mov si, 17
 	mov dl, 10
-	.smallloop:
-	; ah : 나머지     al : 몫
+
+	.smallloop:						; ah : 나머지     al : 몫
 	div dl
 	add ah, '0'
 	mov byte [ MEMORYSIZE + si ], ah
@@ -180,7 +180,6 @@ READEND:
 	mov ah, 0
 	cmp al, 0
 	jne .smallloop
-
 
 	.loopend:
 	
