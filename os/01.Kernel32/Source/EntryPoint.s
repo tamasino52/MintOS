@@ -29,6 +29,17 @@ START:
 	mov ax, 0E820h
 	int 15h
 
+	    ; int 21h is going to want...
+
+    mov  dx, msg      ; the address of or message in dx
+    mov  ah, 9        ; ah=9 - "print string" sub-function
+    int  0x21         ; call dos services
+
+    mov  ah, 0x4c     ; "terminate program" sub-function
+    int  0x21         ; call dos services
+
+
+
     jc .A20GATEERROR        ; A20 게이트 활성화가 성공했는지 확인
     jmp .A20GATESUCCESS
 
@@ -55,6 +66,7 @@ START:
     ; 커널 코드 세그먼트를 0x00을 기준으로 하는 것으로 교체하고 EIP의 값을 0x00을 기준으로 재설정
     ; CS 세그먼트 셀렉터 : EIP
     jmp dword 0x18: ( PROTECTEDMODE - $$ + 0x10000 )
+    msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -84,20 +96,11 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
-    ; int 21h is going to want...
-
-    mov  dx, msg      ; the address of or message in dx
-    mov  ah, 9        ; ah=9 - "print string" sub-function
-    int  0x21         ; call dos services
-
-    mov  ah, 0x4c     ; "terminate program" sub-function
-    int  0x21         ; call dos services
 
 
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
-    msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
