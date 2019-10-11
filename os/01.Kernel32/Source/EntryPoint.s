@@ -211,6 +211,8 @@ GETMEMORY:
 	strTotal  db "Total amount of memory: %", 0 
 	;This is tricky, see below 
 	strNL     db 0
+
+	.end: ret
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; 보호 모드로 진입
