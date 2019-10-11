@@ -161,12 +161,13 @@ READEND:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+	mov eax, 0
 	.loop:
 	mov ax, 0E820h
 	mov dx, 534D4150h
 	int 15h
-	mov eax, dword[es:di+8]
-	;jc .loopend
+	add eax, dword[es:di+8]
+	jnc .loop
 
 	
 	mov si, 17
@@ -183,7 +184,6 @@ READEND:
 	cmp al, 0
 	jne .smallloop
 
-	.loopend:
 	
 	
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
