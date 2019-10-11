@@ -138,39 +138,6 @@ GETMEMORY:
 
  ;This function just show the string strFormat with the appropriate values 
  ;taken from the mem descriptor 
-.show_memory_range:
-	push bp
-	mov bp, sp
-
-	;Extend SP into ESP so we can use ESP in memory operanda (SP is not valid in any addressing mode)
-	movzx esp, sp 
-
-	;Last percent
-	push DWORD [type]
-
-	;Last percents pair
-	push DWORD [length]
-	push DWORD [length + 04h]
-
-	;Add baseAddress and length (64 bit addition)
-	push DWORD [baseAddress]
-	mov eax, DWORD [length]
-	add DWORD [esp], eax               ;Add (lower DWORD)
-	push DWORD [baseAddress + 04h]
-	mov eax, DWORD [length + 04h]
-	adc DWORD [esp], 0                 ;Add with carry (higher DWORD)
-
-	;First percents pair
-	push DWORD [baseAddress]
-	push DWORD [baseAddress + 04h]
-
-	push WORD strFormat
-	call .print
-
-	mov sp, bp                         ;print is a mixed stdcall/cdecl, remove the arguments
-
-	pop bp
-	ret
 
 
 
@@ -263,13 +230,11 @@ GETMEMORY:
 
   	hexDigits db "0123456789abcdef"
 
-
   	;Memory descriptor returned by INT 15 
 	baseAddress dq 0
 	length      dq 0
 	type        dd 0
 	extAttr     dd 0
-
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 	 strFormat db "%% - %% (%%) - %", 0
