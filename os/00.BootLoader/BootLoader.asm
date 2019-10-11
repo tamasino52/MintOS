@@ -167,7 +167,7 @@ READEND:
 	mov dx, 534D4150h
 	int 15h
 	add eax, dword[es:di+8]
-	jnc .loop
+	jc .loop
 
 	
 	mov si, 17
