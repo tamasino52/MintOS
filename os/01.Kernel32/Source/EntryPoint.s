@@ -90,11 +90,11 @@ GETMEMORY:
 	mov eax, 0e820h 
 	mov edx, 534D4150h
 	int 15h
-	jc _error 
+	jc ._error 
 
 	;Has somethig been returned actually?
 	test ecx, ecx
-	jz _next_memory_range
+	jz ._next_memory_range
 
 	;Add length (just the lower 32 bits) to EBP if type = 1 or 3 
 	mov eax, DWORD [length]
@@ -110,7 +110,7 @@ GETMEMORY:
 	add ebp, eax
 
 	;Show current memory descriptor 
-	call show_memory_range
+	call .show_memory_range
 
 ._next_memory_range:
 	test ebx, ebx 
@@ -131,7 +131,7 @@ GETMEMORY:
 ._error:
 	;Print error
 	push WORD strError
-	call print
+	call .print
 
 	cli 
 	hlt
@@ -172,7 +172,7 @@ GETMEMORY:
 	push DWORD [baseAddress + 04h]
 
 	push WORD strFormat
-	call print
+	call .print
 
 	mov sp, bp                         ;print is a mixed stdcall/cdecl, remove the arguments
 
@@ -250,7 +250,7 @@ GETMEMORY:
     mov eax, DWORD [bp]
     add bp, 04h
     ;Show the number 
-    call itoa16
+    call .itoa16
 
     ;We printed 8 chars (16 bytes) 
     sub cx, 10h
