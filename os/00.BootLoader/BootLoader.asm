@@ -169,7 +169,7 @@ READEND:
 	mov ax, cx
 	div bl
 	add al, '0'
-	mov ah, 0
+	mov ax, '0'
 	push ax							; ����� �޽����� ��巹���� ���ÿ� ����
     push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
