@@ -78,20 +78,20 @@ PROTECTEDMODE:
    
    
    	; 메모리 사이즈 출력
-	mov ax, cx
-	mov cx, 0
-	mov bx, 10
-	mov dx, 0
-    div bx                          ;divide by ten
 
-    ; now ax <-- ax/10
-    ;     dx <-- ax % 10
+	mov si, 0
+	mov di, 0
 
-    add dx, '0'                     ;convert dl to ascii
-	push memorysize
-	push 3
-	push 0
-	call PRINTMESSAGE
+	.MSGLOOP:
+	mov cl, byte[ si + MEMORYSIZE ]
+	cmp cl, 0
+	je .MSGEND
+
+	mov byte[ es : di ], cl
+	add si, 1
+	add di, 2
+	.MSGEND:
+
 	
 	 
     ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
@@ -101,12 +101,12 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
-
-
-
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
 
+; 메모리 사이즈
+MEMORYSIZE: db 'sdfsdfdsfdsfs~!!', 0
+	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -176,8 +176,6 @@ PRINTMESSAGE:
 ; 아래의 데이터들을 8byte에 맞춰 정렬하기 위해 추가
 align 8, db 0
 
-; 메모리 사이즈
-memorysize: db 'sdfsdfdsfdsfs~!!', 0
 
 ; GDTR의 끝을 8byte로 정렬하기 위해 추가
 dw 0x0000
