@@ -96,8 +96,8 @@ GETMEMORY:
 	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
 	and eax, edx                  ;EAX = length   | 0        | length   | 0 
 
-	add eax, DWORD msize
-	mov DWORD msize, eax
+	add eax, DWORD [msize]
+	mov DWORD [msize], eax
 
 ._next_memory_range:
 	test ebx, ebx 
@@ -109,7 +109,7 @@ GETMEMORY:
 	;push ebp
 	;push WORD strTotal 
 	;call .print 
-	push DWORD msize     ; 출력할 메시지의 어드레스르 스택에 삽입
+	push msize     ; 출력할 메시지의 어드레스르 스택에 삽입
     push 3                                          ; 화면 Y 좌표(2)를 스택에 삽입
     push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
