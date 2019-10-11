@@ -197,6 +197,7 @@ GETMEMORY:
 
    jmp .scan   
 
+  .end: ret
 
   	hexDigits db "0123456789abcdef"
 
@@ -212,7 +213,7 @@ GETMEMORY:
 	;This is tricky, see below 
 	strNL     db 0
 
-	.end: ret
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; 보호 모드로 진입
