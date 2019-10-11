@@ -165,7 +165,7 @@ READEND:
 	mov cx, 20
 	int 15h
 	mov ax, cx
-	and ax, 0x000f
+	and ax, 0x00ff
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
@@ -175,7 +175,7 @@ READEND:
 
 	mov ax, cx
 	shr ax, 4
-	and ax, 0x000f
+	and ax, 0x00ff
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
@@ -187,7 +187,7 @@ READEND:
 
 	mov ax, cx
 	shr ax, 8
-	and ax, 0x000f
+	and ax, 0x00ff
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
@@ -198,7 +198,7 @@ READEND:
 
 	mov ax, cx
 	shr ax, 12
-	and ax, 0x000f
+	and ax, 0x00ff
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
