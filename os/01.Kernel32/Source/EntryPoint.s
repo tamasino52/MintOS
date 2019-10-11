@@ -136,13 +136,6 @@ GETMEMORY:
 	cli 
 	hlt
 
-
-	;Memory descriptor returned by INT 15 
-	baseAddress dq 0
-	length      dq 0
-	type        dd 0
-	extAttr     dd 0
-
  ;This function just show the string strFormat with the appropriate values 
  ;taken from the mem descriptor 
 .show_memory_range:
@@ -179,12 +172,7 @@ GETMEMORY:
 	pop bp
 	ret
 
-	;Strings, here % denote a 32 bit argument printed as hex 
-	 strFormat db "%% - %% (%%) - %", 0
-	strError  db "Som'thing is wrong :(", 0
-	strTotal  db "Total amount of memory: %", 0 
-	;This is tricky, see below 
-	strNL     db 0
+
 
 ;Show a 32 bit hex number
 .itoa16:
@@ -274,6 +262,20 @@ GETMEMORY:
   .end:
   RET
 
+
+  	;Memory descriptor returned by INT 15 
+	baseAddress dq 0
+	length      dq 0
+	type        dd 0
+	extAttr     dd 0
+
+
+  	;Strings, here % denote a 32 bit argument printed as hex 
+	 strFormat db "%% - %% (%%) - %", 0
+	strError  db "Som'thing is wrong :(", 0
+	strTotal  db "Total amount of memory: %", 0 
+	;This is tricky, see below 
+	strNL     db 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; 보호 모드로 진입
