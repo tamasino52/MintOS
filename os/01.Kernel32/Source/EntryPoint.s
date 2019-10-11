@@ -26,16 +26,6 @@ START:
     mov ax, 0x2401          ; A20 게이트 활성화 서비스 설정
     int 0x15                ; BIOS 인터럽트 서비스 호출
 
-	mov ax, 0E820h
-	int 15h
-
-	; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
-    push ( msg )    ; 출력할 메시지의 어드레스르 스택에 삽입
-    push 0                                          ; 화면 Y 좌표(2)를 스택에 삽입
-    push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
-    call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
-    add esp, 12                                     ; 삽입한 파라미터 제거
-
     jc .A20GATEERROR        ; A20 게이트 활성화가 성공했는지 확인
     jmp .A20GATESUCCESS
 
@@ -91,8 +81,6 @@ PROTECTEDMODE:
     push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
-	
-
 
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
