@@ -215,6 +215,8 @@ _get_memory_range:
 
 	add ebp, eax
 
+	RET
+
 _next_memory_range:
 	test ebx, ebx 
 	jnz _get_memory_range
@@ -224,7 +226,7 @@ _next_memory_range:
 	length      dq 0
 	type        dd 0
 	extAttr     dd 0
-
+	RET
 
 	
 
