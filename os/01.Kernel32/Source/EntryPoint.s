@@ -198,9 +198,6 @@ GETMEMORY:
    jmp .scan   
 
 
-  .end:
-  RET
-
   	hexDigits db "0123456789abcdef"
 
   	;Memory descriptor returned by INT 15 
@@ -211,7 +208,6 @@ GETMEMORY:
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 	 strFormat db "%% - %% (%%) - %", 0
-	strError  db "Som'thing is wrong :(", 0
 	strTotal  db "Total amount of memory: %", 0 
 	;This is tricky, see below 
 	strNL     db 0
