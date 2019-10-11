@@ -110,11 +110,6 @@ GETMEMORY:
 	push WORD strTotal 
 	call .print 
 
-	;Print total memory available
-	mov ebp, 3333
-	push ebp 
-	push WORD strTotal
-	call .print 
 
 	cli
 	hlt
