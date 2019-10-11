@@ -18,6 +18,10 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
     
+
+	call GETMEMORY
+
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
     ; BIOS를 이용한 전환이 실패했을 때 시스템 컨트롤 포트로 전환 시도
@@ -26,7 +30,6 @@ START:
     mov ax, 0x2401          ; A20 게이트 활성화 서비스 설정
     int 0x15                ; BIOS 인터럽트 서비스 호출
 
-	call ._get_memory_range
     jc .A20GATEERROR        ; A20 게이트 활성화가 성공했는지 확인
     jmp .A20GATESUCCESS
 
@@ -59,7 +62,7 @@ START:
     ; 메모리 사이즈 출력 구간 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+GETMEMORY:
 	;Set all the segments to CS 
 	mov ax, cs
 	mov ds, ax
@@ -125,7 +128,7 @@ START:
 	cli
 	hlt
 
-_error:
+._error:
 	;Print error
 	push WORD strError
 	call print
@@ -142,7 +145,7 @@ _error:
 
  ;This function just show the string strFormat with the appropriate values 
  ;taken from the mem descriptor 
-show_memory_range:
+.show_memory_range:
 	push bp
 	mov bp, sp
 
@@ -184,7 +187,7 @@ show_memory_range:
 	strNL     db 0
 
 ;Show a 32 bit hex number
-itoa16:
+.itoa16:
 	push cx
 	push ebx
 
@@ -221,7 +224,7 @@ itoa16:
 
 	;Args
 	;Format
-print:
+.print:
    push bp
    mov bp, sp
 
@@ -241,7 +244,7 @@ print:
 
     ;Format?
     cmp al, '%'
-    jne .print
+    jne .print2
 
     ;Get current arg and advance index 
     mov eax, DWORD [bp]
@@ -254,7 +257,7 @@ print:
 
    jmp .scan    
 
-  .print:
+  .print2:
     ;End of string?
     test al, al
     je .end
@@ -269,6 +272,7 @@ print:
 
 
   .end:
+  RET
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
