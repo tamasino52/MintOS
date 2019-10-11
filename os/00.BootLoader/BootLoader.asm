@@ -169,7 +169,7 @@ READEND:
 	mov bl, 10
 	mov ax, cx
 
-	mov ax, 13
+	mov ax, 87
 	.loop:
 	
 	div bl
@@ -178,9 +178,9 @@ READEND:
 	sub si, 1
 	mov ah, 0
 
-	div bl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
+
+	add al, '0'
+	mov byte [ MEMORYSIZE + si ], al
 	sub si, 1
 
 	
