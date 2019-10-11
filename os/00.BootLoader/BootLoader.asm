@@ -155,36 +155,6 @@ READEND:
     push 20                         ; ȭ�� X ��ǥ(20)�� ���ÿ� ����
     call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
     add  sp, 6                      ; ������ �Ķ���� ����
-
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ���� �޸� ������ ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-	xor ebp, ebp
-
-	call _get_memory_range
-
-	mov si, 17
-	mov dl, 10
-
-	mov eax, ebp
-	shr eax, 16
-	.smallloop:						; ah : 나머지     al : 몫
-	div dl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
-	mov ah, 0
-	cmp al, 0
-	jne .smallloop
-
-	
-	
-	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
-    push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
-    push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
-    call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
-    add  sp, 6                      ; ������ �Ķ���� ����
 	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; �ε��� ���� OS �̹��� ����    
@@ -192,47 +162,6 @@ READEND:
     jmp 0x1000:0x0000
 
 
-_get_memory_range:
-	;Set up the rest of the registers for INT 15 
-	mov eax, 0e820h 
-	mov edx, 534D4150h
-	int 15h
-
-	;Has somethig been returned actually?
-	test ecx, ecx
-	jz _next_memory_range
-
-	;Add length (just the lower 32 bits) to EBP if type = 1 or 3 
-	mov eax, DWORD [length]
-
-	;Avoid a branch (just for the sake of less typing)
-
-	mov edx, DWORD [type]         ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
-	and dx, 01h                   ;EDX = 1        | 0        | 1        | 0 
-	dec edx                       ;EDX = 0        | ffffffff | 0        | ffffffff 
-	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
-	and eax, edx                  ;EAX = length   | 0        | length
-
-	add ebp, eax
-
-
-_next_memory_range:
-	test ebx, ebx 
-	jnz _get_memory_range
-
-	;Memory descriptor returned by INT 15 
-	baseAddress dq 0
-	length      dq 0
-	type        dd 0
-	extAttr     dd 0
-	RET
-
-	
-
-
-
-
-    
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   �Լ� �ڵ� ����
