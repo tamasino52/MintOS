@@ -106,7 +106,7 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print total memory available 
-	;push ebp 
+	push ebp 
 	push WORD strTotal
 	call .print
 
@@ -214,7 +214,7 @@ GETMEMORY:
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 
-	strTotal  db "Total amount of memory: %", 0 
+	strTotal  db "Total amount of % memory: ", 0 
 	;This is tricky, see below 
 	strNL     db 0
 
