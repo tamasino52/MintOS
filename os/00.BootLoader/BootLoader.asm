@@ -197,12 +197,6 @@ READEND:
 	sub si, 1
 
 
-	mov ah, 0
-	div bl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
-
 
 	
 	
@@ -310,7 +304,7 @@ MESSAGE1:    db 'MINT64 OS Boot Loader Start~!!', 0 ; ����� �޽��
 DISKERRORMESSAGE:       db  'DISK Error~!!', 0
 IMAGELOADINGMESSAGE:    db  'OS Image Loading...', 0
 LOADINGCOMPLETEMESSAGE: db  'Complete~!!', 0
-MEMORYSIZE: db  'MEMORY SIZE : 0000MB', 0
+MEMORYSIZE: db  'Memory size [     MB]', 0
 
 ; ��ũ �б⿡ ���õ� ������
 SECTORNUMBER:           db  0x02    ; OS �̹����� �����ϴ� ���� ��ȣ�� �����ϴ� ����
