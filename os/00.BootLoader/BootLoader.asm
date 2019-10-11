@@ -165,7 +165,7 @@ READEND:
 	mov cx, 20
 	int 15h
 	mov ax, cx
-	shr ax, 4
+	and ax, 000f
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
@@ -173,17 +173,9 @@ READEND:
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
 
+	mov ax, cx
 	shr ax, 4
-	add ax, '0'
-	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
-    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
-    push 5							; 화면 X 좌표(20)를 스택에 삽입
-    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
-    add  sp, 6                      ; 삽입한 파라미터 제거
-
-
-
-	shr ax, 4
+	and ax, 000f
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
@@ -192,11 +184,25 @@ READEND:
     add  sp, 6                      ; 삽입한 파라미터 제거
 
 
-	shr ax, 4
+
+	mov ax, cx
+	shr ax, 8
+	and ax, 000f
 	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
-    push 15							; 화면 X 좌표(20)를 스택에 삽입
+    push 20							; 화면 X 좌표(20)를 스택에 삽입
+    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
+    add  sp, 6                      ; 삽입한 파라미터 제거
+
+
+	mov ax, cx
+	shr ax, 12
+	and ax, 000f
+	add ax, '0'
+	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
+    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
+    push 30							; 화면 X 좌표(20)를 스택에 삽입
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
 
