@@ -102,18 +102,13 @@ GETMEMORY:
 	test ebx, ebx 
 	jnz ._get_memory_range
 
-	;Print empty line
-	push WORD strNL 
-	call .print 
-
 	;Print total memory available 
 	push ebp 
 	push WORD strTotal
-	call .print 
+	call .print
 
 	cli
 	hlt
-
 
 ;Show a 32 bit hex number
 .itoa16:
@@ -215,7 +210,7 @@ GETMEMORY:
 	extAttr     dd 0
 
   	;Strings, here % denote a 32 bit argument printed as hex 
-	 strFormat db "%% - %% (%%) - %", 0
+
 	strTotal  db "Total amount of memory: %", 0 
 	;This is tricky, see below 
 	strNL     db 0
