@@ -176,10 +176,22 @@ READEND:
 	mov al, ah
 	mov ah, 0
 	add si, 1
-	
-	cmp ax, 0
-	jne .loop
 
+	div bl
+	add al, '0'
+	mov byte [ MEMORYSIZE + si ], al
+	mov al, ah
+	mov ah, 0
+	add si, 1
+
+	div bl
+	add al, '0'
+	mov byte [ MEMORYSIZE + si ], al
+	mov al, ah
+	mov ah, 0
+	add si, 1
+	
+	
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
     push 20                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
