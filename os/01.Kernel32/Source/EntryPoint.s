@@ -201,7 +201,6 @@ GETMEMORY:
 	pop cx
 	ret
 
-	hexDigits db "0123456789abcdef"
 
 	;This function is a primitive printf, where the only format is % to show a 32 bit 
 	;hex number 
@@ -261,6 +260,8 @@ GETMEMORY:
 
   .end:
   RET
+
+  	hexDigits db "0123456789abcdef"
 
 
   	;Memory descriptor returned by INT 15 
