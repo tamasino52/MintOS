@@ -172,15 +172,17 @@ READEND:
 	mov ax, 87
 	.loop:
 	
+	; ah : 나머지     al : 몫
 	div bl
 	add ah, '0'
 	mov byte [ MEMORYSIZE + si ], ah
 	sub si, 1
 	mov ah, 0
 
-
-	add al, '0'
-	mov byte [ MEMORYSIZE + si ], al
+	mov ah, 0
+	div bl
+	add ah, '0'
+	mov byte [ MEMORYSIZE + si ], ah
 	sub si, 1
 
 	
