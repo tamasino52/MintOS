@@ -109,7 +109,7 @@ GETMEMORY:
 	call .print
 	push WORD strNL 
 	call .print
-	push ebp
+	push DWORD [msize]
 	push WORD strTotal 
 	call .print
 
