@@ -18,9 +18,7 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
     
-
 	call GETMEMORY
-
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -56,20 +54,12 @@ START:
     ; 커널 코드 세그먼트를 0x00을 기준으로 하는 것으로 교체하고 EIP의 값을 0x00을 기준으로 재설정
     ; CS 세그먼트 셀렉터 : EIP
     jmp dword 0x18: ( PROTECTEDMODE - $$ + 0x10000 )
-    ;msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; 메모리 사이즈 출력 구간 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 GETMEMORY:
-	;Set all the segments to CS 
-	mov ax, cs
-	mov ds, ax
-	mov es, ax
-	mov ss, ax
-	xor sp, sp
-
 	;FS will be used to write into the text buffer
 	push 0b800h
 	pop fs
@@ -107,9 +97,6 @@ GETMEMORY:
 	and eax, edx                  ;EAX = length   | 0        | length   | 0 
 
 	add ebp, eax
-
-	;Show current memory descriptor 
-	call .show_memory_range
 
 ._next_memory_range:
 	test ebx, ebx 
@@ -154,7 +141,6 @@ GETMEMORY:
 	pop ebx
 	pop cx
 	ret
-
 
 	;This function is a primitive printf, where the only format is % to show a 32 bit 
 	;hex number 
