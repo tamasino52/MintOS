@@ -106,7 +106,7 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print total memory available 
-	push ebp 
+	;push ebp 
 	push WORD strTotal
 	call .print
 
