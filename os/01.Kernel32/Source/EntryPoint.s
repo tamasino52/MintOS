@@ -110,9 +110,8 @@ GETMEMORY:
 	push WORD strTotal 
 	call .print 
 
-	ret
 	cli
-	hlt
+	ret
 
 ;Show a 32 bit hex number
 .itoa16:
