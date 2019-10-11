@@ -105,10 +105,10 @@ GETMEMORY:
 
 	;Print empty line
 	push WORD strNL 
-	call print
+	call .print
 	push ebp
 	push WORD strTotal 
-	call print 
+	call .print
 
 	cli
 	ret
