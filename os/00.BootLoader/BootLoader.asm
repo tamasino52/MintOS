@@ -168,6 +168,8 @@ READEND:
 	mov si, 5
 	mov bl, 10
 	mov ax, cx
+
+	mov ax, 135
 	.loop:
 	
 	div bl
