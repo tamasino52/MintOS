@@ -165,7 +165,7 @@ READEND:
 	mov ax, 0E820h
 	mov dx, 534D4150h
 	int 15h
-	mov ax, 18 ;dword[es:di+8]
+	mov ax, dword[es:di+8]
 	;jc .loopend
 
 	
