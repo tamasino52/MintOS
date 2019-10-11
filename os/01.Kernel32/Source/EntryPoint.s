@@ -90,7 +90,6 @@ GETMEMORY:
 	mov eax, 0e820h 
 	mov edx, 534D4150h
 	int 15h
-	jc ._error 
 
 	;Has somethig been returned actually?
 	test ecx, ecx
@@ -127,18 +126,6 @@ GETMEMORY:
 
 	cli
 	hlt
-
-._error:
-	;Print error
-	push WORD strError
-	call .print
-
-	cli 
-	hlt
-
- ;This function just show the string strFormat with the appropriate values 
- ;taken from the mem descriptor 
-
 
 
 ;Show a 32 bit hex number
