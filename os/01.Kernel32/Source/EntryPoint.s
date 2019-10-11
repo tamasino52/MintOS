@@ -19,6 +19,8 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
 
+
+
 	;mov DWORD [seax], eax
 	;mov DWORD [sebx], ebx
 	mov DWORD [secx], ecx
