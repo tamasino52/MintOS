@@ -164,8 +164,10 @@ READEND:
 	mov dx, 534D4150h
 	mov cx, 20
 	int 15h
-	add cx, 30h
-	push cx							; 출력할 메시지의 어드레스를 스택에 삽입
+	mov ax, cx
+	shr ax, 8
+	add ax, 30h
+	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
     push 0							; 화면 X 좌표(20)를 스택에 삽입
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
