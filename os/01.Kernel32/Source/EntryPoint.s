@@ -29,16 +29,12 @@ START:
 	mov ax, 0E820h
 	int 15h
 
-	    ; int 21h is going to want...
-
-    mov  dx, msg      ; the address of or message in dx
-    mov  ah, 9        ; ah=9 - "print string" sub-function
-    int  0x21         ; call dos services
-
-    mov  ah, 0x4c     ; "terminate program" sub-function
-    int  0x21         ; call dos services
-
-
+	; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
+    push ( msg )    ; 출력할 메시지의 어드레스르 스택에 삽입
+    push 0                                          ; 화면 Y 좌표(2)를 스택에 삽입
+    push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
+    call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
+    add esp, 12                                     ; 삽입한 파라미터 제거
 
     jc .A20GATEERROR        ; A20 게이트 활성화가 성공했는지 확인
     jmp .A20GATESUCCESS
