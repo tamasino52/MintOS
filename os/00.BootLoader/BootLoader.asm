@@ -165,7 +165,7 @@ READEND:
 	mov cx, 20
 	int 15h
 
-	mov si, 0
+	mov si, 5
 	mov bl, 10
 	mov ax, cx
 	.loop:
@@ -175,36 +175,28 @@ READEND:
 	mov  byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
-	add si, 1
+	sub si, 1
 
 	div bl
 	add al, '0'
 	mov byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
-	add si, 1
+	sub si, 1
 
 	div bl
 	add al, '0'
 	mov byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
-	add si, 1
+	sub si, 1
 
 	div bl
 	add al, '0'
 	mov byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
-	add si, 1
-
-
-	div bl
-	add al, '0'
-	mov byte [ MEMORYSIZE + si ], al
-	mov al, ah
-	mov ah, 0
-	add si, 1
+	sub si, 1
 
 
 	div bl
@@ -212,7 +204,15 @@ READEND:
 	mov byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
-	add si, 1
+	sub si, 1
+
+
+	div bl
+	add al, '0'
+	mov byte [ MEMORYSIZE + si ], al
+	mov al, ah
+	mov ah, 0
+	sub si, 1
 	
 	
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
@@ -319,7 +319,7 @@ MESSAGE1:    db 'MINT64 OS Boot Loader Start~!!', 0 ; ����� �޽��
 DISKERRORMESSAGE:       db  'DISK Error~!!', 0
 IMAGELOADINGMESSAGE:    db  'OS Image Loading...', 0
 LOADINGCOMPLETEMESSAGE: db  'Complete~!!', 0
-MEMORYSIZE: db  'ABCDEFG', 0
+MEMORYSIZE: db  '000000MB', 0
 
 ; ��ũ �б⿡ ���õ� ������
 SECTORNUMBER:           db  0x02    ; OS �̹����� �����ϴ� ���� ��ȣ�� �����ϴ� ����
