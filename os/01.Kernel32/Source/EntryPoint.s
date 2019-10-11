@@ -73,8 +73,7 @@ GETMEMORY:
 	xor ebx, ebx                           ;Start from beginning
 	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
 
-	;EBP will count the available memory 
-	xor ebp, ebp 
+
 
 ._get_memory_range:
 	;Set up the rest of the registers for INT 15 
@@ -97,7 +96,7 @@ GETMEMORY:
 	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
 	and eax, edx                  ;EAX = length   | 0        | length   | 0 
 
-	add ebp, eax
+	add msize, eax
 
 ._next_memory_range:
 	test ebx, ebx 
@@ -109,7 +108,7 @@ GETMEMORY:
 	;push ebp
 	;push WORD strTotal 
 	;call .print 
-	push ebp     ; 출력할 메시지의 어드레스르 스택에 삽입
+	push msize     ; 출력할 메시지의 어드레스르 스택에 삽입
     push 3                                          ; 화면 Y 좌표(2)를 스택에 삽입
     push 0                                          ; 화면 X 좌표(0)를 스택에 삽입
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
@@ -323,7 +322,7 @@ PRINTMESSAGE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 아래의 데이터들을 8byte에 맞춰 정렬하기 위해 추가
 align 8, db 0
-
+msize dw 0x00000000
 
 ; GDTR의 끝을 8byte로 정렬하기 위해 추가
 dw 0x0000
