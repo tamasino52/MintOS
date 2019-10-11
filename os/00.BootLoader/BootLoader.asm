@@ -166,43 +166,22 @@ READEND:
 	int 15h
 
 	mov si, 5
-	mov bx, 10
+	mov bl, 10
 	mov ax, cx
 
 	mov ax, 13
 	.loop:
 	
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
-	sub si, 1
-
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
-	sub si, 1
-
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
-	sub si, 1
-
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
+	div bl
+	add al, '0'
+	mov byte [ MEMORYSIZE + si ], al
 	sub si, 1
 
 
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
+	add ah, '0'
+	mov byte [ MEMORYSIZE + si ], ah
 	sub si, 1
 
-
-	div bx
-	add dx, '0'
-	mov byte [ MEMORYSIZE + si ], dx
-	sub si, 1
 	
 	
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
