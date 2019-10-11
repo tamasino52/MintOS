@@ -172,7 +172,7 @@ READEND:
 	
 	div bl
 	add al, '0'
-	mov byte [ MEMORYSIZE : si ], al
+	mov byte [ MEMORYSIZE + si ], al
 	mov al, ah
 	mov ah, 0
 	add si, 1
