@@ -19,8 +19,6 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
 
-
-
 	;FS will be used to write into the text buffer
 	push 0b800h
 	pop fs
@@ -212,12 +210,6 @@ START:
 	length      dq 0
 	type        dd 0
 	extAttr     dd 0
-
-	seax		dq 0
-	sebx		dq 0
-	secx		dq 0
-	sedx		dq 0
-	sebp		dq 0
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 
