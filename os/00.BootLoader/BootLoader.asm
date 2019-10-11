@@ -157,7 +157,7 @@ READEND:
     add  sp, 6                      ; 삽입한 파라미터 제거
 
 	push LOADINGCOMPLETEMESSAGE     ; 출력할 메시지의 어드레스를 스택에 삽입
-    push 2                          ; 화면 Y 좌표(1)를 스택에 삽입
+    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
     push 0                         ; 화면 X 좌표(20)를 스택에 삽입
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
