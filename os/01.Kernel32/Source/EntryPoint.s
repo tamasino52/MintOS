@@ -106,6 +106,10 @@ GETMEMORY:
 	;Print empty line
 	push WORD strNL 
 	call .print
+	push WORD strNL 
+	call .print
+	push WORD strNL 
+	call .print
 	push ebp
 	push WORD strTotal 
 	call .print
