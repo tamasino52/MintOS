@@ -175,7 +175,8 @@ READEND:
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
 
-	mov ax, ah
+	mov al, ah
+	cbw
 	div bx
 	add al, '0'
 	push al							; 출력할 메시지의 어드레스를 스택에 삽입
@@ -185,8 +186,8 @@ READEND:
     add  sp, 6                      ; 삽입한 파라미터 제거
 
 
-
-	mov ax, ah
+	mov al, ah
+	cbw
 	div bx
 	add al, '0'
 	push al							; 출력할 메시지의 어드레스를 스택에 삽입
@@ -195,8 +196,8 @@ READEND:
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
 
-
-	mov ax, ah
+	mov al, ah
+	cbw
 	div bx
 	add al, '0'
 	push al							; 출력할 메시지의 어드레스를 스택에 삽입
