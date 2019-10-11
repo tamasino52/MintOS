@@ -169,7 +169,7 @@ READEND:
 	mov bl, 10
 	mov ax, cx
 
-	mov ax, 135
+	mov ax, 13
 	.loop:
 	
 	div bl
