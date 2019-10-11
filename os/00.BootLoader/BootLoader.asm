@@ -171,7 +171,7 @@ READEND:
 	add al, '0'
 	mov byte [ MEMORYSIZE ], al
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
-    push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
+    push 20                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
     call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
     add  sp, 6                      ; ������ �Ķ���� ����
