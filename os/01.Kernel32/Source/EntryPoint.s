@@ -114,16 +114,16 @@ GETMEMORY:
 
 ._next_memory_range:
 	test ebx, ebx 
-	jnz _get_memory_range
+	jnz ._get_memory_range
 
 	;Print empty line
 	push WORD strNL 
-	call print 
+	call .print 
 
 	;Print total memory available 
 	push ebp 
 	push WORD strTotal
-	call print 
+	call .print 
 
 	cli
 	hlt
