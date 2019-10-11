@@ -175,36 +175,6 @@ READEND:
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
 
-	mov al, ah
-	mov ah, 0
-	div bx
-	add al, '0'
-	push al							; 출력할 메시지의 어드레스를 스택에 삽입
-    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
-    push 10							; 화면 X 좌표(20)를 스택에 삽입
-    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
-    add  sp, 6                      ; 삽입한 파라미터 제거
-
-
-	mov al, ah
-	mov ah, 0
-	div bx
-	add al, '0'
-	push al							; 출력할 메시지의 어드레스를 스택에 삽입
-    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
-    push 20							; 화면 X 좌표(20)를 스택에 삽입
-    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
-    add  sp, 6                      ; 삽입한 파라미터 제거
-
-	mov al, ah
-	mov ah, 0
-	div bx
-	add al, '0'
-	push al							; 출력할 메시지의 어드레스를 스택에 삽입
-    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
-    push 30							; 화면 X 좌표(20)를 스택에 삽입
-    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
-    add  sp, 6                      ; 삽입한 파라미터 제거
 
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
