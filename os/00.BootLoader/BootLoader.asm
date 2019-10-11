@@ -215,7 +215,6 @@ _get_memory_range:
 
 	add ebp, eax
 
-	RET
 
 _next_memory_range:
 	test ebx, ebx 
