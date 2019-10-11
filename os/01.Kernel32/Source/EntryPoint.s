@@ -19,19 +19,21 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
 
-	mov DWORD [seax], eax
-	mov DWORD [sebx], ebx
+	;mov DWORD [seax], eax
+	;mov DWORD [sebx], ebx
 	mov DWORD [secx], ecx
 	mov DWORD [sedx], edx
     mov DWORD [sebp], ebp
 
 	call GETMEMORY
 
-	mov eax, DWORD [seax]
-	mov ebx, DWORD [sebx]
+	;mov eax, DWORD [seax]
+	;mov ebx, DWORD [sebx]
 	mov ecx, DWORD [secx]
 	mov edx, DWORD [sedx]
 	mov ebp, DWORD [sebp]
+
+
 
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,8 +87,7 @@ GETMEMORY:
 	mov di, baseAddress                    ;Offset in ES where to save the result
 	xor ebx, ebx                           ;Start from beginning
 	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
-
-
+	
 
 ._get_memory_range:
 	;Set up the rest of the registers for INT 15 
