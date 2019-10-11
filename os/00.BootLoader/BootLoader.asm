@@ -173,7 +173,7 @@ READEND:
 	.loop:
 	
 	div bl
-	add al, '0'
+	add ah, '0'
 	mov byte [ MEMORYSIZE + si ], ah
 	sub si, 1
 	mov ah, 0
