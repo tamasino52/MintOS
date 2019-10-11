@@ -18,13 +18,21 @@ START:
                     ; 세그먼트 레지스터 값으로 변환
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
-    
+
+	mov DWORD [seax], eax
+	mov DWORD [sebx], ebx
+	mov DWORD [secx], ecx
+	mov DWORD [sedx], edx
+    mov DWORD [sebp], ebp
+
 	call GETMEMORY
 
-	mov ax, 0x1000  ; 보호 모드 엔트리 포인트의 시작 어드레스(0x10000)를 
-                    ; 세그먼트 레지스터 값으로 변환
-    mov ds, ax      ; DS 세그먼트 레지스터에 설정
-    mov es, ax      ; ES 세그먼트 레지스터에 설정
+	mov eax, DWORD [seax]
+	mov ebx, DWORD [sebx]
+	mov ecx, DWORD [secx]
+	mov edx, DWORD [sedx]
+	mov ebp, DWORD [sebp]
+
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -101,8 +109,7 @@ GETMEMORY:
 	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
 	and eax, edx                  ;EAX = length   | 0        | length   | 0 
 
-	add eax, DWORD [msize]
-	mov DWORD [msize], eax
+	add ebp, eax
 
 ._next_memory_range:
 	test ebx, ebx 
@@ -114,7 +121,7 @@ GETMEMORY:
 	;push WORD strNL 
 	;call .print
 
-	push DWORD [msize]
+	push ebp
 	push WORD strTotal 
 	call .print
 
@@ -218,6 +225,12 @@ GETMEMORY:
 	length      dq 0
 	type        dd 0
 	extAttr     dd 0
+
+	seax		dq 0
+	sebx		dq 0
+	secx		dq 0
+	sedx		dq 0
+	sebp		dq 0
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 
@@ -326,7 +339,6 @@ PRINTMESSAGE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 아래의 데이터들을 8byte에 맞춰 정렬하기 위해 추가
 align 8, db 0
-msize dw 0
 
 ; GDTR의 끝을 8byte로 정렬하기 위해 추가
 dw 0x0000
