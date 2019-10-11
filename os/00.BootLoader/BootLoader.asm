@@ -169,8 +169,8 @@ READEND:
 	mov ax, cx
 	div bl
 	add al, '0'
-	mov ax, '0'
-	push ax							; ����� �޽����� ��巹���� ���ÿ� ����
+	mov byte [ MEMORYSIZE ], al
+	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
     push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
     call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
@@ -273,6 +273,7 @@ MESSAGE1:    db 'MINT64 OS Boot Loader Start~!!', 0 ; ����� �޽��
 DISKERRORMESSAGE:       db  'DISK Error~!!', 0
 IMAGELOADINGMESSAGE:    db  'OS Image Loading...', 0
 LOADINGCOMPLETEMESSAGE: db  'Complete~!!', 0
+MEMORYSIZE: db  '000000MB', 0
 
 ; ��ũ �б⿡ ���õ� ������
 SECTORNUMBER:           db  0x02    ; OS �̹����� �����ϴ� ���� ��ȣ�� �����ϴ� ����
