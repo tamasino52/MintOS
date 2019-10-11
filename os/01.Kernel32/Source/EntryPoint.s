@@ -202,7 +202,7 @@ GETMEMORY:
 	pop di
 
 	pop bp
-	ret 02h
+	ret
 
   	hexDigits db "0123456789abcdef"
 
