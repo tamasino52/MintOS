@@ -197,7 +197,14 @@ GETMEMORY:
 
    jmp .scan   
 
-  .end: ret
+  .end:
+    add si, cx
+
+	pop cx
+	pop di
+
+	pop bp
+	ret 02h
 
   	hexDigits db "0123456789abcdef"
 
