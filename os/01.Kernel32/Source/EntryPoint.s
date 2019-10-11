@@ -59,7 +59,7 @@ START:
     ; 메모리 사이즈 출력 구간 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-GETMEMORY:
+.GETMEMORY:
 	;FS will be used to write into the text buffer
 	push 0b800h
 	pop fs
