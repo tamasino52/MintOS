@@ -172,6 +172,8 @@ READEND:
 	mov si, 17
 	mov dl, 10
 
+	shr eax, 16
+
 	.smallloop:						; ah : 나머지     al : 몫
 	div dl
 	add ah, '0'
