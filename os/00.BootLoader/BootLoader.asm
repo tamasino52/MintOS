@@ -1,310 +1,233 @@
-# file      BootLoader.asm
-# date      2008/11/27
-# author    kkamagui 
-#           Copyright(c)2008 All rights reserved by kkamagui
-# brief     MINT64 OS�� ��Ʈ �δ� �ҽ� ����
+BITS 16
 
-[ORG 0x00]          ; �ڵ��� ���� ��巹���� 0x00���� ����
-[BITS 16]           ; ������ �ڵ�� 16��Ʈ �ڵ�� ����
+;Set CS to a known value
+;This makes the offsets in memory and in source match 
+;(e.g. __START__ is at offset 5h in the binary image and at addres 7c0h:0005h)
 
-SECTION .text       ; text ����(���׸�Ʈ)�� ����
+jmp 7c0h:__START__
 
-jmp 0x07C0:START    ; CS ���׸�Ʈ �������Ϳ� 0x07C0�� �����ϸ鼭, START ���̺��� �̵�
+__START__:
+ ;Set all the segments to CS 
+ mov ax, cs
+ mov ds, ax
+ mov es, ax
+ mov ss, ax
+ xor sp, sp
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   MINT64 OS�� ���õ� ȯ�� ���� ��
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-TOTALSECTORCOUNT:   dw  0x02    ; ��Ʈ �δ��� ������ MINT64 OS �̹����� ũ��
-                                ; �ִ� 1152 ����(0x90000byte)���� ����
-KERNEL32SECTORCOUNT: dw 0x02    ; ��ȣ ��� Ŀ���� �� ���� ��
+ ;Clear the screen
+ mov ax, 03h
+ int 10h
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   �ڵ� ����
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-START:
-    mov ax, 0x07C0  ; ��Ʈ �δ��� ���� ��巹��(0x7C00)�� ���׸�Ʈ �������� ������ ��ȯ
-    mov ds, ax      ; DS ���׸�Ʈ �������Ϳ� ����
-    mov ax, 0xB800  ; ���� �޸��� ���� ��巹��(0x7C00)�� ���׸�Ʈ �������� ������ ��ȯ
-    mov es, ax      ; ES ���׸�Ʈ �������Ϳ� ����
+ ;FS will be used to write into the text buffer
+ push 0b800h
+ pop fs
 
-    ; ������ 0x0000:0000~0x0000:FFFF ������ 64KB ũ��� ����
-    mov ax, 0x0000  ; ���� ���׸�Ʈ�� ���� ��巹��(0x0000)�� ���׸�Ʈ �������� ������ ��ȯ
-    mov ss, ax      ; SS ���׸�Ʈ �������Ϳ� ����
-    mov sp, 0xFFFE  ; SP ���������� ��巹���� 0xFFFE�� ����
-    mov bp, 0xFFFE  ; BP ���������� ��巹���� 0xFFFE�� ����
+ ;SI is the pointer in the text buffer 
+ xor si, si 
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ȭ���� ��� �����, �Ӽ����� ������� ����
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    mov si,    0                    ; SI ��������(���ڿ� ���� �ε��� ��������)�� �ʱ�ȭ
-        
-.SCREENCLEARLOOP:                   ; ȭ���� ����� ����
-    mov byte [ es: si ], 0          ; ���� �޸��� ���ڰ� ��ġ�ϴ� ��巹����
-                                    ; 0�� �����Ͽ� ���ڸ� ����
-    mov byte [ es: si + 1 ], 0x0A   ; ���� �޸��� �Ӽ��� ��ġ�ϴ� ��巹����
-                                    ; 0x0A(���� ������ ���� ���)�� ����
+ ;These are for the INT 15 service
+ mov di, baseAddress                    ;Offset in ES where to save the result
+ xor ebx, ebx                           ;Start from beginning
+ mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
 
+ ;EBP will count the available memory 
+ xor ebp, ebp 
 
-    add si, 2                       ; ���ڿ� �Ӽ��� ���������Ƿ� ���� ��ġ�� �̵�
+_get_memory_range:
+ ;Set up the rest of the registers for INT 15 
+ mov eax, 0e820h 
+ mov edx, 534D4150h
+ int 15h
+ jc _error 
 
-    cmp si, 80 * 25 * 2     ; ȭ���� ��ü ũ��� 80 ���� * 25 ������
-                            ; ����� ������ ���� �ǹ��ϴ� SI �������Ϳ� ��
-    jl .SCREENCLEARLOOP     ; SI �������Ͱ� 80 * 25 * 2���� �۴ٸ� ���� ������ 
-                            ; ���� ������ �����Ƿ� .SCREENCLEARLOOP ���̺��� �̵�
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ȭ�� ��ܿ� ���� �޽����� ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    push MESSAGE1               ; ����� �޽����� ��巹���� ���ÿ� ����
-    push 0                      ; ȭ�� Y ��ǥ(0)�� ���ÿ� ����
-    push 0                      ; ȭ�� X ��ǥ(0)�� ���ÿ� ����
-    call PRINTMESSAGE           ; PRINTMESSAGE �Լ� ȣ��
-    add  sp, 6                  ; ������ �Ķ���� ����
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; OS �̹����� �ε��Ѵٴ� �޽��� ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    push IMAGELOADINGMESSAGE    ; ����� �޽����� ��巹���� ���ÿ� ����           
-    push 1                      ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����                     
-    push 0                      ; ȭ�� X ��ǥ(0)�� ���ÿ� ����                     
-    call PRINTMESSAGE           ; PRINTMESSAGE �Լ� ȣ��                           
-    add  sp, 6                  ; ������ �Ķ���� ����                             
-        
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ��ũ���� OS �̹����� �ε�
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ��ũ�� �б� ���� ���� ����
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-RESETDISK:                          ; ��ũ�� �����ϴ� �ڵ��� ����
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; BIOS Reset Function ȣ��
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ���� ��ȣ 0, ����̺� ��ȣ(0=Floppy)
-    mov ax, 0
-    mov dl, 0              
-    int 0x13     
-    ; ������ �߻��ϸ� ���� ó���� �̵�
-    jc  HANDLEDISKERROR
-        
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ��ũ���� ���͸� ����
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ��ũ�� ������ �޸𸮷� ������ ��巹��(ES:BX)�� 0x10000���� ����
-    mov si, 0x1000                  ; OS �̹����� ������ ��巹��(0x10000)�� 
-                                    ; ���׸�Ʈ �������� ������ ��ȯ
-    mov es, si                      ; ES ���׸�Ʈ �������Ϳ� �� ����
-    mov bx, 0x0000                  ; BX �������Ϳ� 0x0000�� �����Ͽ� ������ 
-                                    ; ��巹���� 0x1000:0000(0x10000)���� ���� ����
+ ;Has somethig been returned actually?
+ test ecx, ecx
+ jz _next_memory_range
 
-    mov di, word [ TOTALSECTORCOUNT ] ; ������ OS �̹����� ���� ���� DI �������Ϳ� ����
+ ;Add length (just the lower 32 bits) to EBP if type = 1 or 3 
+ mov eax, DWORD [length]
 
-READDATA:                           ; ��ũ�� �д� �ڵ��� ����
-    ; ��� ���͸� �� �о����� Ȯ��
-    cmp di, 0               ; ������ OS �̹����� ���� ���� 0�� ��
-    je  READEND             ; ������ ���� ���� 0�̶�� �� ���� �����Ƿ� READEND�� �̵�
-    sub di, 0x1             ; ������ ���� ���� 1 ����
+ ;Avoid a branch (just for the sake of less typing)
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; BIOS Read Function ȣ��
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    mov ah, 0x02                        ; BIOS ���� ��ȣ 2(Read Sector)
-    mov al, 0x1                         ; ���� ���� ���� 1
-    mov ch, byte [ TRACKNUMBER ]        ; ���� Ʈ�� ��ȣ ����
-    mov cl, byte [ SECTORNUMBER ]       ; ���� ���� ��ȣ ����
-    mov dh, byte [ HEADNUMBER ]         ; ���� ��� ��ȣ ����
-    mov dl, 0x00                        ; ���� ����̺� ��ȣ(0=Floppy) ����
-    int 0x13                            ; ���ͷ�Ʈ ���� ����
-    jc HANDLEDISKERROR                  ; ������ �߻��ߴٸ� HANDLEDISKERROR�� �̵�
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ������ ��巹���� Ʈ��, ���, ���� ��巹�� ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    add si, 0x0020      ; 512(0x200)����Ʈ��ŭ �о����Ƿ�, �̸� ���׸�Ʈ ��������
-                        ; ������ ��ȯ
-    mov es, si          ; ES ���׸�Ʈ �������Ϳ� ���ؼ� ��巹���� �� ���� ��ŭ ����
-    
-    ; �� ���͸� �о����Ƿ� ���� ��ȣ�� ������Ű�� ������ ����(18)���� �о����� �Ǵ�
-    ; ������ ���Ͱ� �ƴϸ� ���� �б�� �̵��ؼ� �ٽ� ���� �б� ����
-    mov al, byte [ SECTORNUMBER ]       ; ���� ��ȣ�� AL �������Ϳ� ����
-    add al, 0x01                        ; ���� ��ȣ�� 1 ����
-    mov byte [ SECTORNUMBER ], al       ; ������Ų ���� ��ȣ�� SECTORNUMBER�� �ٽ� ����
-    cmp al, 19                          ; ������Ų ���� ��ȣ�� 19�� ��
-    jl READDATA                         ; ���� ��ȣ�� 19 �̸��̶�� READDATA�� �̵�
-    
-    ; ������ ���ͱ��� �о�����(���� ��ȣ�� 19�̸�) ��带 ���(0->1, 1->0)�ϰ�, 
-    ; ���� ��ȣ�� 1�� ����
-    xor byte [ HEADNUMBER ], 0x01       ; ��� ��ȣ�� 0x01�� XOR�Ͽ� ���(0->1, 1->1)
-    mov byte [ SECTORNUMBER ], 0x01     ; ���� ��ȣ�� �ٽ� 1�� ����
-    
-    ; ���� ��尡 1->0�� �ٲ������ ���� ��带 ��� ���� ���̹Ƿ� �Ʒ��� �̵��Ͽ�
-    ; Ʈ�� ��ȣ�� 1 ����
-    cmp byte [ HEADNUMBER ], 0x00       ; ��� ��ȣ�� 0x00�� ��
-    jne READDATA                        ; ��� ��ȣ�� 0�� �ƴϸ� READDATA�� �̵�
-    
-    ; Ʈ���� 1 ������Ų ��, �ٽ� ���� �б�� �̵�
-    add byte [ TRACKNUMBER ], 0x01      ; Ʈ�� ��ȣ�� 1 ����
-    jmp READDATA                        ; READDATA�� �̵�
-READEND:
+ mov edx, DWORD [type]         ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
+ and dx, 01h                   ;EDX = 1        | 0        | 1        | 0 
+ dec edx                       ;EDX = 0        | ffffffff | 0        | ffffffff 
+ not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
+ and eax, edx                  ;EAX = length   | 0        | length   | 0 
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; OS �̹����� �Ϸ�Ǿ��ٴ� �޽����� ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    push LOADINGCOMPLETEMESSAGE     ; ����� �޽����� ��巹���� ���ÿ� ����
-    push 1                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
-    push 20                         ; ȭ�� X ��ǥ(20)�� ���ÿ� ����
-    call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
-    add  sp, 6                      ; ������ �Ķ���� ����
+ add ebp, eax
 
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; ���� �޸� ������ ���
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;Show current memory descriptor 
+ call show_memory_range
+
+_next_memory_range:
+ test ebx, ebx 
+ jnz _get_memory_range
+
+ ;Print empty line
+ push WORD strNL 
+ call print 
+
+ ;Print total memory available 
+ push ebp 
+ push WORD strTotal
+ call print 
+
+ cli
+ hlt
+
+_error:
+ ;Print error
+ push WORD strError
+ call print
+
+ cli 
+ hlt
 
 
-	mov eax, 0
-	.loop:
-	mov ax, 0E820h
-	mov dx, 534D4150h
-	int 15h
-	add eax, dword[es:di+8]
-	jc .loop
+ ;Memory descriptor returned by INT 15 
+ baseAddress dq 0
+ length      dq 0
+ type        dd 0
+ extAttr     dd 0
 
-	
-	mov si, 17
-	mov dl, 10
+ ;This function just show the string strFormat with the appropriate values 
+ ;taken from the mem descriptor 
+ show_memory_range:
+  push bp
+  mov bp, sp
 
-	shr eax, 0
+  ;Extend SP into ESP so we can use ESP in memory operanda (SP is not valid in any addressing mode)
+  movzx esp, sp 
 
-	.smallloop:						; ah : 나머지     al : 몫
-	div dl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
-	mov ah, 0
-	cmp al, 0
-	jne .smallloop
+  ;Last percent
+  push DWORD [type]
 
-	
-	
-	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
-    push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
-    push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
-    call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
-    add  sp, 6                      ; ������ �Ķ���� ����
-	
+  ;Last percents pair
+  push DWORD [length]
+  push DWORD [length + 04h]
+
+  ;Add baseAddress and length (64 bit addition)
+  push DWORD [baseAddress]
+  mov eax, DWORD [length]
+  add DWORD [esp], eax               ;Add (lower DWORD)
+  push DWORD [baseAddress + 04h]
+  mov eax, DWORD [length + 04h]
+  adc DWORD [esp], 0                 ;Add with carry (higher DWORD)
+
+  ;First percents pair
+  push DWORD [baseAddress]
+  push DWORD [baseAddress + 04h]
+
+  push WORD strFormat
+  call print
+
+  mov sp, bp                         ;print is a mixed stdcall/cdecl, remove the arguments
+
+  pop bp
+  ret
+
+ ;Strings, here % denote a 32 bit argument printed as hex 
+ strFormat db "%% - %% (%%) - %", 0
+ strError  db "Som'thing is wrong :(", 0
+ strTotal  db "Total amount of memory: %", 0 
+ ;This is tricky, see below 
+ strNL     db 0
+
+ ;Show a 32 bit hex number
+ itoa16:
+  push cx
+  push ebx
+
+  mov cl, 28d
+
+ .digits:
+   mov ebx, eax
+   shr ebx, cl
+   and bx, 0fh                     ;Get current nibble
+
+   ;Translate nibble (digit to digital)
+   mov bl, BYTE [bx + hexDigits]
+
+   ;Show it 
+   mov bh, 0ch
+   mov WORD [fs:si], bx
+   add si, 02h   
+
+   sub cl, 04h
+  jnc .digits
+
+  pop ebx
+  pop cx
+  ret
+
+  hexDigits db "0123456789abcdef"
+
+  ;This function is a primitive printf, where the only format is % to show a 32 bit 
+  ;hex number 
+  ;The "cursor" is kept by SI.
+  ;SI is always aligned to lines, so 1) never print anything bigger than 80 chars
+  ;2) successive calls automatically print into their own lines 
+  ;3) SI is assumed at the beginning of a line 
+
+  ;Args
+  ;Format
+  print:
+   push bp
+   mov bp, sp
+
+   push di
+   push cx
+
+   mov di, WORD [bp+04h]      ;String 
+   mov cx, 80*2               ;How much to add to SI to reach the next line 
+
+   add bp, 06h                ;Pointer to var arg 
+
+  .scan:
+
+    ;Read cur char 
+    mov al, [di]
+    inc di
+
+    ;Format?
+    cmp al, '%'
+    jne .print
+
+    ;Get current arg and advance index 
+    mov eax, DWORD [bp]
+    add bp, 04h
+    ;Show the number 
+    call itoa16
+
+    ;We printed 8 chars (16 bytes) 
+    sub cx, 10h
+
+   jmp .scan    
+
+  .print:
+    ;End of string?
+    test al, al
+    je .end
+
+    ;Normal char, print it 
+    mov ah, 0ch
+    mov WORD [fs:si], ax
+    add si, 02h
+    sub cx, 02h
+
+   jmp .scan   
 
 
+  .end:
+   add si, cx
 
+   pop cx
+   pop di
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; �ε��� ���� OS �̹��� ����    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    jmp 0x1000:0x0000
-    
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   �Լ� �ڵ� ����
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ��ũ ������ ó���ϴ� �Լ�   
-HANDLEDISKERROR:
-    push DISKERRORMESSAGE   ; ���� ���ڿ��� ��巹���� ���ÿ� ����
-    push 1                  ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
-    push 20                 ; ȭ�� X ��ǥ(20)�� ���ÿ� ����
-    call PRINTMESSAGE       ; PRINTMESSAGE �Լ� ȣ��
-    
-    jmp $                   ; ���� ��ġ���� ���� ���� ����
+   pop bp
+   ret 02h
 
-; �޽����� ����ϴ� �Լ�
-;   PARAM: x ��ǥ, y ��ǥ, ���ڿ�
-PRINTMESSAGE:
-    push bp         ; ���̽� ������ ��������(BP)�� ���ÿ� ����
-    mov bp, sp      ; ���̽� ������ ��������(BP)�� ���� ������ ��������(SP)�� ���� ����
-                    ; ���̽� ������ ��������(BP)�� �̿��ؼ� �Ķ���Ϳ� ������ ����
-
-    push es         ; ES ���׸�Ʈ �������ͺ��� DX �������ͱ��� ���ÿ� ����
-    push si         ; �Լ����� �ӽ÷� ����ϴ� �������ͷ� �Լ��� ������ �κп���
-    push di         ; ���ÿ� ���Ե� ���� ���� ���� ������ ����
-    push ax
-    push cx
-    push dx
-    
-    ; ES ���׸�Ʈ �������Ϳ� ���� ��� ��巹�� ����
-    mov ax, 0xB800              ; ���� �޸� ���� ��巹��(0x0B8000)�� 
-                                ; ���׸�Ʈ �������� ������ ��ȯ
-    mov es, ax                  ; ES ���׸�Ʈ �������Ϳ� ����
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; X, Y�� ��ǥ�� ���� �޸��� ��巹���� �����
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; Y ��ǥ�� �̿��ؼ� ���� ���� ��巹���� ����
-    mov ax, word [ bp + 6 ]     ; �Ķ���� 2(ȭ�� ��ǥ Y)�� AX �������Ϳ� ����
-    mov si, 160                 ; �� ������ ����Ʈ ��(2 * 80 �÷�)�� SI �������Ϳ� ����
-    mul si                      ; AX �������Ϳ� SI �������͸� ���Ͽ� ȭ�� Y ��巹�� ���
-    mov di, ax                  ; ���� ȭ�� Y ��巹���� DI �������Ϳ� ����
-    
-    ; X �·Ḧ �̿��ؼ� 2�� ���� �� ���� ��巹���� ����
-    mov ax, word [ bp + 4 ]     ; �Ķ���� 1(ȭ�� ��ǥ X)�� AX �������Ϳ� ����
-    mov si, 2                   ; �� ���ڸ� ��Ÿ���� ����Ʈ ��(2)�� SI �������Ϳ� ����
-    mul si                      ; AX �������Ϳ� SI �������͸� ���Ͽ� ȭ�� X ��巹���� ���
-    add di, ax                  ; ȭ�� Y ��巹���� ���� X ��巹���� ���ؼ�
-                                ; ���� ���� �޸� ��巹���� ���
-    
-    ; ����� ���ڿ��� ��巹��      
-    mov si, word [ bp + 8 ]     ; �Ķ���� 3(����� ���ڿ��� ��巹��)
-
-.MESSAGELOOP:               ; �޽����� ����ϴ� ����
-    mov cl, byte [ si ]     ; SI �������Ͱ� ����Ű�� ���ڿ� ��ġ���� �� ���ڸ� 
-                            ; CL �������Ϳ� ����
-                            ; CL �������ʹ� CX ���������� ���� 1����Ʈ�� �ǹ�
-                            ; ���ڿ��� 1����Ʈ�� ����ϹǷ� CX ���������� ���� 1����Ʈ�� ���
-    
-    cmp cl, 0               ; ����� ���ڿ� 0�� ��
-    je .MESSAGEEND          ; ������ ������ ���� 0�̸� ���ڿ��� ����Ǿ�����
-                            ; �ǹ��ϹǷ� .MESSAGEEND�� �̵��Ͽ� ���� ��� ����
-
-    mov byte [ es: di ], cl ; 0�� �ƴ϶�� ���� �޸� ��巹�� 0xB800:di�� ���ڸ� ���
-    
-    add si, 1               ; SI �������Ϳ� 1�� ���Ͽ� ���� ���ڿ��� �̵�
-    add di, 2               ; DI �������Ϳ� 2�� ���Ͽ� ���� �޸��� ���� ���� ��ġ�� �̵�
-                            ; ���� �޸𸮴� (����, �Ӽ�)�� ������ �����ǹǷ� ���ڸ� ����Ϸ���
-                            ; 2�� ���ؾ� ��
-
-    jmp .MESSAGELOOP        ; �޽��� ��� ������ �̵��Ͽ� ���� ���ڸ� ���
-
-.MESSAGEEND:
-    pop dx      ; �Լ����� ����� ���� DX �������ͺ��� ES �������ͱ����� ���ÿ�
-    pop cx      ; ���Ե� ���� �̿��ؼ� ����
-    pop ax      ; ������ ���� �������� �� �����Ͱ� ���� ���� ������ 
-    pop di      ; �ڷᱸ��(Last-In, First-Out)�̹Ƿ� ����(push)�� ��������
-    pop si      ; ����(pop) �ؾ� ��
-    pop es
-    pop bp      ; ���̽� ������ ��������(BP) ����
-    ret         ; �Լ��� ȣ���� ���� �ڵ��� ��ġ�� ����
-    
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   ������ ����
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ��Ʈ �δ� ���� �޽���
-MESSAGE1:    db 'MINT64 OS Boot Loader Start~!!', 0 ; ����� �޽��� ����
-                                                    ; �������� 0���� �����Ͽ� .MESSAGELOOP���� 
-                                                    ; ���ڿ��� ����Ǿ����� �� �� �ֵ��� ��
-DISKERRORMESSAGE:       db  'DISK Error~!!', 0
-IMAGELOADINGMESSAGE:    db  'OS Image Loading...', 0
-LOADINGCOMPLETEMESSAGE: db  'Complete~!!', 0
-MEMORYSIZE: db  'Memory size [     MB ]', 0
-
-; ��ũ �б⿡ ���õ� ������
-SECTORNUMBER:           db  0x02    ; OS �̹����� �����ϴ� ���� ��ȣ�� �����ϴ� ����
-HEADNUMBER:             db  0x00    ; OS �̹����� �����ϴ� ��� ��ȣ�� �����ϴ� ����
-TRACKNUMBER:            db  0x00    ; OS �̹����� �����ϴ� Ʈ�� ��ȣ�� �����ϴ� ����
-    
-times 510 - ( $ - $$ )    db    0x00    ; $ : ���� ������ ��巹��
-                                        ; $$ : ���� ����(.text)�� ���� ��巹��
-                                        ; $ - $$ : ���� ������ �������� �ϴ� ������
-                                        ; 510 - ( $ - $$ ) : ������� ��巹�� 510����
-                                        ; db 0x00 : 1����Ʈ�� �����ϰ� ���� 0x00
-                                        ; time : �ݺ� ����
-                                        ; ���� ��ġ���� ��巹�� 510���� 0x00���� ä��
-
-db 0x55             ; 1����Ʈ�� �����ϰ� ���� 0x55
-db 0xAA             ; 1����Ʈ�� �����ϰ� ���� 0xAA
-                    ; ��巹�� 511, 512�� 0x55, 0xAA�� �Ἥ ��Ʈ ���ͷ� ǥ����
+   ;Signature
+   TIMES 510 - ($-$$) db 0 
+   dw 0aa55h
