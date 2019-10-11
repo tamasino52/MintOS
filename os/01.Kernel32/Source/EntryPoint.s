@@ -19,7 +19,7 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
     
-
+		call GETMEMORY
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
     ; BIOS를 이용한 전환이 실패했을 때 시스템 컨트롤 포트로 전환 시도
@@ -250,7 +250,7 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
-	call GETMEMORY
+
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
