@@ -168,7 +168,7 @@ READEND:
 	mov dl, 10
 
 	mov eax, ebp
-
+	shr eax, 16
 	.smallloop:						; ah : 나머지     al : 몫
 	div dl
 	add ah, '0'
