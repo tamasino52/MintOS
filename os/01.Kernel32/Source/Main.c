@@ -26,7 +26,7 @@ void Main( void )
     DWORD dwEAX, dwEBX, dwECX, dwEDX;
     char vcVendorString[ 13 ] = { 0, };
     
-    kPrintString( 0, 5, "Protected Mode C Language Kernel Start......[Pass]" );
+    kPrintString( 0, 4, "Protected Mode C Language Kernel Start......[Pass]" );
     
     // 최소 메모리 크기를 만족하는 지 검사
     kPrintString( 0, 5, "Minimum Memory Size Check...................[    ]" );
