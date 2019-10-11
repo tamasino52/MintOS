@@ -19,7 +19,7 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
     
-		call GETMEMORY
+	call GETMEMORY
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
     ; BIOS를 이용한 전환이 실패했을 때 시스템 컨트롤 포트로 전환 시도
@@ -103,12 +103,9 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print empty line
-	push WORD strNL 
-	call .print
-	push WORD strNL 
-	call .print
-	push WORD strNL 
-	call .print
+	;push WORD strNL 
+	;call .print
+
 	push DWORD [msize]
 	push WORD strTotal 
 	call .print
