@@ -93,11 +93,11 @@ PROTECTEDMODE:
     mov  ah, 0x4c     ; "terminate program" sub-function
     int  0x21         ; call dos services
 
-    msg  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
+
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
-
+    msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
