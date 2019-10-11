@@ -110,7 +110,7 @@ GETMEMORY:
 	push WORD strTotal 
 	call .print 
 
-
+	ret
 	cli
 	hlt
 
