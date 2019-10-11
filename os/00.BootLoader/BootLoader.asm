@@ -165,7 +165,7 @@ READEND:
 	mov cx, 20
 	int 15h
 	mov ax, cx
-	shr ax, 8
+	shr ax, 12
 	add ax, 30h
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
