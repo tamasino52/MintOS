@@ -84,8 +84,6 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
-	org  0x100        ; .com files always start 256 bytes into the segment
-
     ; int 21h is going to want...
 
     mov  dx, msg      ; the address of or message in dx
