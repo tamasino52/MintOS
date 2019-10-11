@@ -21,6 +21,7 @@ START:
     
 	call GETMEMORY
 
+	mov ax, 0x1000
     mov ds, 0x1000      ; DS 세그먼트 레지스터에 설정
     mov es, 0x1000      ; ES 세그먼트 레지스터에 설정
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -106,10 +107,10 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print empty line
-	push WORD strNL 
-	call .print
-	push WORD strNL 
-	call .print
+	;push WORD strNL 
+	;call .print
+	;push WORD strNL 
+	;call .print
 
 	push DWORD [msize]
 	push WORD strTotal 
