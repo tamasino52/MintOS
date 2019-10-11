@@ -169,7 +169,6 @@ READEND:
 	mov bl, 10
 	mov ax, cx
 
-	mov ax, 187
 	.loop:
 	
 	; ah : 나머지     al : 몫
