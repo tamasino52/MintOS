@@ -21,21 +21,19 @@ START:
 
 
 
-	;mov DWORD [seax], eax
-	;mov DWORD [sebx], ebx
-	mov DWORD [secx], ecx
-	mov DWORD [sedx], edx
-    mov DWORD [sebp], ebp
+	;FS will be used to write into the text buffer
+	push 0b800h
+	pop fs
 
-	call GETMEMORY
+	;SI is the pointer in the text buffer 
+	xor si, si 
 
-	;mov eax, DWORD [seax]
-	;mov ebx, DWORD [sebx]
-	mov ecx, DWORD [secx]
-	mov edx, DWORD [sedx]
-	mov ebp, DWORD [sebp]
+	;These are for the INT 15 service
+	mov di, baseAddress                    ;Offset in ES where to save the result
+	xor ebx, ebx                           ;Start from beginning
+	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
 
-
+	call ._get_memory_range
 
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -76,20 +74,6 @@ START:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; 메모리 사이즈 출력 구간 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-GETMEMORY:
-	;FS will be used to write into the text buffer
-	push 0b800h
-	pop fs
-
-	;SI is the pointer in the text buffer 
-	xor si, si 
-
-	;These are for the INT 15 service
-	mov di, baseAddress                    ;Offset in ES where to save the result
-	xor ebx, ebx                           ;Start from beginning
-	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
-	
 
 ._get_memory_range:
 	;Set up the rest of the registers for INT 15 
