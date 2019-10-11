@@ -160,44 +160,29 @@ READEND:
     ; ���� �޸� ������ ���
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	mov ax, 0E820h
-	mov dx, 534D4150h
-	mov cx, 20
-	int 15h
-
-	mov si, 17
-	mov bl, 10
-	mov ax, cx
 
 	.loop:
+	mov ax, 0E820h
+	mov dx, 534D4150h
+	int 15h
+	mov ax, dword[es:di+8]
+	jc .loopend
+
 	
+	mov si, 17
+	mov dl, 10
+	.smallloop:
 	; ah : 나머지     al : 몫
-	div bl
+	div dl
 	add ah, '0'
 	mov byte [ MEMORYSIZE + si ], ah
 	sub si, 1
-
 	mov ah, 0
-	div bl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
-
-	mov ah, 0
-	div bl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
+	cmp al, 0
+	jne .smallloop
 
 
-	mov ah, 0
-	div bl
-	add ah, '0'
-	mov byte [ MEMORYSIZE + si ], ah
-	sub si, 1
-
-
-
+	.loopend:
 	
 	
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
