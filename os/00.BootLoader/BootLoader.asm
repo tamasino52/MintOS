@@ -165,13 +165,41 @@ READEND:
 	mov cx, 20
 	int 15h
 	mov ax, cx
-	shr ax, 12
-	add ax, 30h
+	shr ax, 4
+	add ax, '0'
 	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
     push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
     push 0							; 화면 X 좌표(20)를 스택에 삽입
     call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
     add  sp, 6                      ; 삽입한 파라미터 제거
+
+	shr ax, 4
+	add ax, '0'
+	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
+    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
+    push 5							; 화면 X 좌표(20)를 스택에 삽입
+    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
+    add  sp, 6                      ; 삽입한 파라미터 제거
+
+
+
+	shr ax, 4
+	add ax, '0'
+	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
+    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
+    push 10							; 화면 X 좌표(20)를 스택에 삽입
+    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
+    add  sp, 6                      ; 삽입한 파라미터 제거
+
+
+	shr ax, 4
+	add ax, '0'
+	push ax							; 출력할 메시지의 어드레스를 스택에 삽입
+    push 3                          ; 화면 Y 좌표(1)를 스택에 삽입
+    push 15							; 화면 X 좌표(20)를 스택에 삽입
+    call PRINTMESSAGE               ; PRINTMESSAGE 함수 호출
+    add  sp, 6                      ; 삽입한 파라미터 제거
+
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; 로딩한 가상 OS 이미지 실행    
