@@ -214,7 +214,7 @@ GETMEMORY:
 
   	;Strings, here % denote a 32 bit argument printed as hex 
 
-	strTotal  db "Total amount of % memory: ", 0 
+	strTotal  db "Total amount of memory: %", 0 
 	;This is tricky, see below 
 	strNL     db 0
 
