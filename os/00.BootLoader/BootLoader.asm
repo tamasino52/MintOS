@@ -170,7 +170,7 @@ READEND:
 
 	add al, '0'
 
-	push al							; ����� �޽����� ��巹���� ���ÿ� ����
+	push ax							; ����� �޽����� ��巹���� ���ÿ� ����
     push 3                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
     call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
