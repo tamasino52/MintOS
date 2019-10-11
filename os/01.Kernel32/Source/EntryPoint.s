@@ -76,24 +76,7 @@ PROTECTEDMODE:
     mov esp, 0xFFFE     ; ESP 레지스터의 어드레스를 0xFFFE로 설정
     mov ebp, 0xFFFE     ; EBP 레지스터의 어드레스를 0xFFFE로 설정
    
-   
-   	; 메모리 사이즈 출력
-
-	mov si, 0
-	mov di, 0
-
-	.MSGLOOP:
-	mov cl, byte[ si + MEMORYSIZE ]
-	cmp cl, 0
-	je .MSGEND
-
-	mov byte[ es : di ], cl
-	add si, 1
-	add di, 2
-	.MSGEND:
-
-	
-	 
+    
     ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
     push ( SWITCHSUCCESSMESSAGE - $$ + 0x10000 )    ; 출력할 메시지의 어드레스르 스택에 삽입
     push 2                                          ; 화면 Y 좌표(2)를 스택에 삽입
@@ -101,20 +84,22 @@ PROTECTEDMODE:
     call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
     add esp, 12                                     ; 삽입한 파라미터 제거
 	
-    ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
-    push ( SWITCHSUCCESSMESSAGE )    ; 출력할 메시지의 어드레스르 스택에 삽입
-    push 3                                          ; 화면 Y 좌표(2)를 스택에 삽입
-    push 15                                          ; 화면 X 좌표(0)를 스택에 삽입
-    call PRINTMESSAGE                               ; PRINTMESSAGE 함수 호출
-    add esp, 12                                     ; 삽입한 파라미터 제거
+	org  0x100        ; .com files always start 256 bytes into the segment
 
+    ; int 21h is going to want...
+
+    mov  dx, msg      ; the address of or message in dx
+    mov  ah, 9        ; ah=9 - "print string" sub-function
+    int  0x21         ; call dos services
+
+    mov  ah, 0x4c     ; "terminate program" sub-function
+    int  0x21         ; call dos services
+
+    msg  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 
     jmp dword 0x18: 0x10200 ; C 언어 커널이 존재하는 0x10200 어드레스로 이동하여 C 언어 커널 수행
 
 
-; 메모리 사이즈
-MEMORYSIZE: db 'sdfsdfdsfdsfs~!!', 0
-	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;   함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
