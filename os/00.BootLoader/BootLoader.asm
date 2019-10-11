@@ -319,7 +319,7 @@ MESSAGE1:    db 'MINT64 OS Boot Loader Start~!!', 0 ; ����� �޽��
 DISKERRORMESSAGE:       db  'DISK Error~!!', 0
 IMAGELOADINGMESSAGE:    db  'OS Image Loading...', 0
 LOADINGCOMPLETEMESSAGE: db  'Complete~!!', 0
-MEMORYSIZE: db  '000000MB', 0
+MEMORYSIZE: db  'ABCDEFG', 0
 
 ; ��ũ �б⿡ ���õ� ������
 SECTORNUMBER:           db  0x02    ; OS �̹����� �����ϴ� ���� ��ȣ�� �����ϴ� ����
