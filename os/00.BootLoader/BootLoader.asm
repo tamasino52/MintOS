@@ -165,16 +165,27 @@ READEND:
 	mov cx, 20
 	int 15h
 
+	mov si, 0
 	mov bl, 10
 	mov ax, cx
+	.loop:
+	
 	div bl
 	add al, '0'
-	mov byte [ MEMORYSIZE ], al
+	mov byte [ MEMORYSIZE : si ], al
+	mov al, ah
+	mov ah, 0
+	add si, 1
+	
+	cmp ax, 0
+	jne .loop
+
 	push MEMORYSIZE					; ����� �޽����� ��巹���� ���ÿ� ����
     push 20                          ; ȭ�� Y ��ǥ(1)�� ���ÿ� ����
     push 0							; ȭ�� X ��ǥ(20)�� ���ÿ� ����
     call PRINTMESSAGE               ; PRINTMESSAGE �Լ� ȣ��
     add  sp, 6                      ; ������ �Ķ���� ����
+	
 
 
 
