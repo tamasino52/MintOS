@@ -14,15 +14,12 @@ SECTION .text       ; text 섹션(세그먼트)을 정의
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 START:
 
-	call GETMEMORY
-
-
-
     mov ax, 0x1000  ; 보호 모드 엔트리 포인트의 시작 어드레스(0x10000)를 
                     ; 세그먼트 레지스터 값으로 변환
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
     
+	call GETMEMORY
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -107,6 +104,8 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print empty line
+	push WORD strNL 
+	call .print 
 	push WORD strNL 
 	call .print 
 
