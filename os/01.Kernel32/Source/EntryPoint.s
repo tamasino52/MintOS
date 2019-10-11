@@ -56,7 +56,7 @@ START:
     ; 커널 코드 세그먼트를 0x00을 기준으로 하는 것으로 교체하고 EIP의 값을 0x00을 기준으로 재설정
     ; CS 세그먼트 셀렉터 : EIP
     jmp dword 0x18: ( PROTECTEDMODE - $$ + 0x10000 )
-    msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
+    ;msg:  db 'Hello, World!', 0x0d, 0x0a, '$'   ; $-terminated message
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; 메모리 사이즈 출력 구간 
