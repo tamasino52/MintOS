@@ -104,8 +104,10 @@ GETMEMORY:
 	jnz ._get_memory_range
 
 	;Print empty line
-	;push WORD strNL 
-	;call .print
+	push WORD strNL 
+	call .print
+	push WORD strNL 
+	call .print
 
 	push DWORD [msize]
 	push WORD strTotal 
