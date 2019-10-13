@@ -32,7 +32,13 @@ START:
 	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
 
 	call ._get_memory_range
-
+	
+	
+	push ebp
+	push 3
+	push 0
+	call PRINTMESSAGE
+	add sp, 6
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -100,106 +106,6 @@ START:
 	test ebx, ebx 
 	jnz ._get_memory_range
 
-	;Print empty line
-	;push WORD strNL
-	;call .print
-
-	;push ebp
-	;push WORD strTotal 
-	;call .print
-
-	ret
-
-;Show a 32 bit hex number
-.itoa16:
-	push cx
-	push ebx
-
-	mov cl, 28d
-
-.digits:
-	mov ebx, eax
-	shr ebx, cl
-	and bx, 0fh                     ;Get current nibble
-
-	;Translate nibble (digit to digital)
-	mov bl, BYTE [bx + hexDigits]
-
-	;Show it 
-	mov bh, 0ch
-	mov WORD [fs:si], bx
-	add si, 02h   
-
-	sub cl, 04h
-	jnc .digits
-
-	pop ebx
-	pop cx
-	ret
-
-	;This function is a primitive printf, where the only format is % to show a 32 bit 
-	;hex number 
-	;The "cursor" is kept by SI.
-	;SI is always aligned to lines, so 
-	;1) never print anything bigger than 80 chars
-	;2) successive calls automatically print into their own lines 
-	;3) SI is assumed at the beginning of a line 
-
-	;Args
-	;Format
-
-.print:
-	push bp
-	mov bp, sp
-
-	push di
-	push cx
-
-	mov di, WORD [bp+04h]      ;String 
-	mov cx, 80*2               ;How much to add to SI to reach the next line 
-
-	add bp, 06h                ;Pointer to var arg 
-
-.scan:
-    ;Read cur char 
-    mov al, [di]
-    inc di
-
-    ;Format?
-    cmp al, '%'
-    jne .print2
-
-    ;Get current arg and advance index 
-    mov eax, DWORD [bp]
-    add bp, 04h
-    ;Show the number 
-    call .itoa16
-
-    ;We printed 8 chars (16 bytes) 
-    sub cx, 10h
-
-	jmp .scan    
-
-.print2:
-    ;End of string?
-    test al, al
-    je .end
-
-    ;Normal char, print it 
-    mov ah, 0ch
-    mov WORD [fs:si], ax
-    add si, 02h
-    sub cx, 02h
-
-	jmp .scan   
-
-.end:
-    add si, cx
-
-	pop cx
-	pop di
-
-	pop bp
 	ret
 
 hexDigits db "0123456789abcdef"
