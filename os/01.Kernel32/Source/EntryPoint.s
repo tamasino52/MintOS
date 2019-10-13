@@ -33,12 +33,12 @@ START:
 
 	call ._get_memory_range
 	
-	
-	push ebp
+
+	push strTotal
 	push 3
 	push 0
 	call PRINTMESSAGE
-	add sp, 6
+	add esp, 12
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
