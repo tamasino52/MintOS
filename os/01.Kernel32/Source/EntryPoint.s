@@ -33,7 +33,7 @@ START:
 
 	call ._get_memory_range
 	
-	push eax
+	push strTotal
 	push 3
 	push 0
 	call PRINTMESSAGE
