@@ -34,11 +34,11 @@ START:
 	call ._get_memory_range
 	
 
-	push strTotal
+	push eax
 	push 3
 	push 0
 	call PRINTMESSAGE
-	add esp, 12
+	add esp, 6
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -106,9 +106,13 @@ START:
 	test ebx, ebx 
 	jnz ._get_memory_range
 
+	mov eax, ebp
+	mov ecx, 1048576
+	div ecx
+
+	pop ebp
 	ret
 
-hexDigits db "0123456789abcdef"
 
 ;Memory descriptor returned by INT 15 
 baseAddress dq 0
