@@ -106,8 +106,7 @@ START:
 	jnz ._get_memory_range
 
 	mov eax, ebp
-	mov ecx, 1048576
-	div ecx
+	shr eax, 20
 
 	pop ebp
 	ret
