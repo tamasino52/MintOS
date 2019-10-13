@@ -33,7 +33,7 @@ START:
 
 	call ._get_memory_range
 	
-	push strTotal
+	push strMsg
 	push 3
 	push 0
 	call PRINTMESSAGE
@@ -120,7 +120,7 @@ type        dd 0
 extAttr     dd 0
 
 ;Strings, here % denote a 32 bit argument printed as hex 
-
+strMsg  db "String", 0 
 strTotal  db "Total amount of memory: %", 0 
 ;This is tricky, see below 
 strNL     db 0
