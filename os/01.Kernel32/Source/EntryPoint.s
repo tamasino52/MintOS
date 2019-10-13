@@ -19,25 +19,64 @@ START:
     mov ds, ax      ; DS 세그먼트 레지스터에 설정
     mov es, ax      ; ES 세그먼트 레지스터에 설정
 
-	;FS will be used to write into the text buffer
-	push 0b800h
-	pop fs
-
-	;SI is the pointer in the text buffer 
-	xor si, si 
-
 	;These are for the INT 15 service
-	mov di, baseAddress                    ;Offset in ES where to save the result
+	mov di, 0                    ;Offset in ES where to save the result
 	xor ebx, ebx                           ;Start from beginning
 	mov ecx, 18h                           ;Length of the output buffer (One descriptor at a time)
+	xor ebp, ebp
+.a:
+	;Set up the rest of the registers for INT 15 
+	mov eax, 0xe820 
+	mov edx, 0x534D4150
+	int 0x15
+	jc .b
 
-	call ._get_memory_range
+	;Add length (just the lower 32 bits) to EBP if type = 1 or 3 
+	mov eax, 0
+	mov eax, DWORD[es:di + 8]
+
+	;Avoid a branch (just for the sake of less typing)
 	
-	push strMsg
-	push 15
-	push 0
-	call PRINTMESSAGE
-	add sp, 6
+	mov edx, 0
+	mov edx, DWORD [es:di + 16]         ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
+	and dx, 1                     ;EDX = 1        | 0        | 1        | 0 
+	dec edx                       ;EDX = 0        | ffffffff | 0        | ffffffff 
+	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
+	and eax, edx                  ;EAX = length   | 0        | length   | 0 
+
+	add ebp, eax
+
+;        mov byte[MEMORY+14], al
+;._next_memory_range:
+	test ebx, ebx 
+	jnz .a
+.b:
+	mov eax, ebp
+	shr eax, 20
+	
+	mov edx, 0
+	mov cx, 10
+	div cx
+	add dx, 0x30
+	mov byte[MEMORY + 14], dl 
+
+	mov edx, 0
+	mov cx, 10
+	div cx
+	add dx, 0x30
+	mov byte[MEMORY + 13], dl
+	
+	mov edx, 0
+	mov cx, 10
+	div cx
+	add dx, 0x30
+	mov byte[MEMORY + 12], dl
+
+	mov edx, 0
+	mov cx, 10
+	div cx
+	add dx, 0x30
+	mov byte[MEMORY + 11], dl
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; A20 게이트를 활성화
@@ -78,51 +117,8 @@ START:
     ; 메모리 사이즈 출력 구간 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-._get_memory_range:
-	;Set up the rest of the registers for INT 15 
-	mov eax, 0e820h 
-	mov edx, 534D4150h
-	int 15h
-
-	;Has somethig been returned actually?
-	test ecx, ecx
-	jz ._next_memory_range
-
-	;Add length (just the lower 32 bits) to EBP if type = 1 or 3 
-	mov eax, DWORD [length]
-
-	;Avoid a branch (just for the sake of less typing)
-
-	mov edx, DWORD [type]         ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
-	and dx, 01h                   ;EDX = 1        | 0        | 1        | 0 
-	dec edx                       ;EDX = 0        | ffffffff | 0        | ffffffff 
-	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
-	and eax, edx                  ;EAX = length   | 0        | length   | 0 
-
-	add ebp, eax
-
-._next_memory_range:
-	test ebx, ebx 
-	jnz ._get_memory_range
-
-	mov eax, ebp
-	shr eax, 20
-
-	pop ebp
-	ret
 
 
-;Memory descriptor returned by INT 15 
-baseAddress dq 0
-length      dq 0
-type        dd 0
-extAttr     dd 0
-
-;Strings, here % denote a 32 bit argument printed as hex 
-strMsg  db "String", 0 
-strTotal  db "Total amount of memory: %", 0 
-;This is tricky, see below 
-strNL     db 0
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -145,6 +141,11 @@ PROTECTEDMODE:
     mov esp, 0xFFFE     ; ESP 레지스터의 어드레스를 0xFFFE로 설정
     mov ebp, 0xFFFE     ; EBP 레지스터의 어드레스를 0xFFFE로 설정
    
+    push ( MEMORY - $$ + 0x10000 )    ; 출력할 메시지의 어드레스르 스택에 삽입
+    push 2
+    push 40
+    call PRINTMESSAGE
+    add esp, 12
     
     ; 화면에 보호 모드로 전환되었다는 메시지를 찍는다.
     push ( SWITCHSUCCESSMESSAGE - $$ + 0x10000 )    ; 출력할 메시지의 어드레스르 스택에 삽입
@@ -283,5 +284,5 @@ GDTEND:
 
 ; 보호 모드로 전환되었다는 메시지
 SWITCHSUCCESSMESSAGE: db 'Switch To Protected Mode Success~!!', 0
-
+MEMORY: db'RAM Size:       mb',0
 times 512 - ( $ - $$ )  db  0x00    ; 512바이트를 맞추기 위해 남은 부분을 0으로 채움
