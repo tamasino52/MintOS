@@ -101,14 +101,12 @@ START:
 	jnz ._get_memory_range
 
 	;Print empty line
-	;push WORD strNL 
-	;call .print
-	;push WORD strNL 
+	;push WORD strNL
 	;call .print
 
-	push ebp
-	push WORD strTotal 
-	call .print
+	;push ebp
+	;push WORD strTotal 
+	;call .print
 
 	ret
 
@@ -142,26 +140,27 @@ START:
 	;This function is a primitive printf, where the only format is % to show a 32 bit 
 	;hex number 
 	;The "cursor" is kept by SI.
-	;SI is always aligned to lines, so 1) never print anything bigger than 80 chars
+	;SI is always aligned to lines, so 
+	;1) never print anything bigger than 80 chars
 	;2) successive calls automatically print into their own lines 
 	;3) SI is assumed at the beginning of a line 
 
 	;Args
 	;Format
+
 .print:
-   push bp
-   mov bp, sp
+	push bp
+	mov bp, sp
 
-   push di
-   push cx
+	push di
+	push cx
 
-   mov di, WORD [bp+04h]      ;String 
-   mov cx, 80*2               ;How much to add to SI to reach the next line 
+	mov di, WORD [bp+04h]      ;String 
+	mov cx, 80*2               ;How much to add to SI to reach the next line 
 
-   add bp, 06h                ;Pointer to var arg 
+	add bp, 06h                ;Pointer to var arg 
 
-  .scan:
-
+.scan:
     ;Read cur char 
     mov al, [di]
     inc di
@@ -179,9 +178,9 @@ START:
     ;We printed 8 chars (16 bytes) 
     sub cx, 10h
 
-   jmp .scan    
+	jmp .scan    
 
-  .print2:
+.print2:
     ;End of string?
     test al, al
     je .end
@@ -192,9 +191,9 @@ START:
     add si, 02h
     sub cx, 02h
 
-   jmp .scan   
+	jmp .scan   
 
-  .end:
+.end:
     add si, cx
 
 	pop cx
@@ -203,19 +202,19 @@ START:
 	pop bp
 	ret
 
-  	hexDigits db "0123456789abcdef"
+hexDigits db "0123456789abcdef"
 
-  	;Memory descriptor returned by INT 15 
-	baseAddress dq 0
-	length      dq 0
-	type        dd 0
-	extAttr     dd 0
+;Memory descriptor returned by INT 15 
+baseAddress dq 0
+length      dq 0
+type        dd 0
+extAttr     dd 0
 
-  	;Strings, here % denote a 32 bit argument printed as hex 
+;Strings, here % denote a 32 bit argument printed as hex 
 
-	strTotal  db "Total amount of memory: %", 0 
-	;This is tricky, see below 
-	strNL     db 0
+strTotal  db "Total amount of memory: %", 0 
+;This is tricky, see below 
+strNL     db 0
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
