@@ -31,6 +31,7 @@ void Main( void )
 	kPrintString(0, 15, "Read from 0x1ff000 [     ]");
 	tmp = (char *) 0x1FF000;
 	kPrintString(22, 15, "OK");
+
 }
 
 /**
@@ -61,4 +62,12 @@ void kAB8000PrintString(int iX, int iY, const char* pcString)
 	for(i = 0; pcString[i] != 0; i++){
 		pstScreen[i].bCharactor = pcString[i];
 	}
+}
+
+void PageFaultException() {
+
+}
+
+void ProtectionFaultException() {
+
 }
