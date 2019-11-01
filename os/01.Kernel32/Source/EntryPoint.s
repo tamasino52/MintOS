@@ -38,7 +38,7 @@ START:
 	;Avoid a branch (just for the sake of less typing)
 	
 	mov edx, 0
-	mov edx, DWORD [es:di + 16]         ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
+	mov edx, DWORD [es:di + 16]   ;EDX = 1        | 2        | 3        | 4   (1 and 3 are available memory)
 	and dx, 1                     ;EDX = 1        | 0        | 1        | 0 
 	dec edx                       ;EDX = 0        | ffffffff | 0        | ffffffff 
 	not edx                       ;EDX = ffffffff | 0        | ffffffff | 0 
