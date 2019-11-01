@@ -77,7 +77,7 @@ BOOL kActivateKeyboard(void) {
 
 
 // 출력 버퍼에서 키를 읽음
-BYTE kGetKeyBoardScanCode(void)
+BYTE kGetKeyboardScanCode(void)
 {
 	//출력 버퍼에 데이터가 있을 때까지 대기
 	while (kIsOutputBufferFull() == FALSE)
