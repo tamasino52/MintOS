@@ -17,6 +17,13 @@ void kAB8000PrintString(int iX, int iY, const char* pcString);
  */
 void Main( void )
 {
+
+	char vcTemp[2] = { 0, };
+	BYTE bFlags;
+	BYTE bTemp;
+	int i = 0;
+
+
     kPrintString( 0, 10, "Switch To IA-32e Mode Success~!!" );
     kPrintString( 0, 11, "IA-32e C Language Kernel Start..............[Pass]" );
 	kAB8000PrintString(0, 12, "This message is printed through the video memory relocated to 0xAB8000");
@@ -32,6 +39,39 @@ void Main( void )
 	tmp = (char *) 0x1FF000;
 	kPrintString(22, 15, "OK");
 
+	kPrintString(0, 16, "Keyboard Activate..............[     ]");
+
+	// 키보드 활성화
+	if (kActivateKeyboard() == TRUE)
+	{
+		kPrintString(34, 16, "Pass");
+		kChangeKeyboardLED(FALSE, FALSE, FALSE);
+	}
+	else
+	{
+		kPrintString(34, 16, "Fail");
+		while (1);
+	}
+
+	while (1)
+	{
+		// 출력 버퍼가 차있으면 스캔코드를 읽을 수 없음
+		if (kIsOutputBufferFull() == TRUE)
+		{
+			//출력 버퍼에서 스캔코드를 읽어서 저장
+			bTemp = kGetKeyboardScanCode();
+
+			//스캔코드를 아스키 코드로 변환하는 함수를 호출하여 아스키 코드와 눌림 또는 떨어짐 정보를 반환
+			if (kConvertScanCodeToASCIICode(bTemp, &(vcTemp[0]), &bFlags) == TRUE)
+			{
+				//키가 눌러졌으면 키의 아스키코드값을 화면에 출력
+				if (bFlags & KEY_FLAGS_DOWN)
+				{
+					kPrintString(i++, 17,  vcTemp);
+				}
+			}
+		}
+	}
 }
 
 /**
