@@ -2,7 +2,6 @@
 #define __KEYBOARD_H__
 
 #include "Types.h"
-#include "Synchronization.h"
 
 #define KEY_SKIPCOUNTFORPAUSE	2
 
