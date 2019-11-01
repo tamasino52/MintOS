@@ -61,7 +61,6 @@ typedef struct kKeyMappingEntryStruct
 
 typedef struct kKeyboardManagerStruct
 {
-	SPINLOCK stSpinLock;
 
 	BOOL bShiftDown;
 	BOOL bCapsLockOn;
