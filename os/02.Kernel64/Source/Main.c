@@ -7,6 +7,7 @@
  */
 
 #include "Types.h"
+#include "Keyboard.h"
 
 // 함수 선언
 void kPrintString( int iX, int iY, const char* pcString );
