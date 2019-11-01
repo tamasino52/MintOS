@@ -45,12 +45,12 @@ void Main( void )
 	// 키보드 활성화
 	if (kActivateKeyboard() == TRUE)
 	{
-		kPrintString(32, 16, "Pass");
+		kPrintString(33, 16, "Pass");
 		kChangeKeyboardLED(FALSE, FALSE, FALSE);
 	}
 	else
 	{
-		kPrintString(32, 16, "Fail");
+		kPrintString(33, 16, "Fail");
 		while (1);
 	}
 
