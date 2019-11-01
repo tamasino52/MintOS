@@ -82,9 +82,6 @@ typedef struct kKeyDataStruct
 
 BOOL kIsOutputBufferFull(void);
 BOOL kIsInputBufferFull(void);
-BOOL kWaitForACKAndPutOtherScanCode(void);
-BOOL kWaitForInputBufferEmpty(void);
-BOOL kWaitForOutputBufferFull(void);
 BOOL kActivateKeyboard(void);
 BYTE kGetKeyboardScanCode(void);
 BOOL kChangeKeyboardLED(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn);
@@ -96,8 +93,6 @@ BOOL kIsNumberPadScanCode(BYTE bScanCode);
 BOOL kIsUseCombinedCode(BYTE bScanCode);
 void kUpdateCombinationKeyStatusAndLED(BYTE bScanCode);
 BOOL kConvertScanCodeToASCIICode(BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFlags);
-BOOL kInitializeKeyboard(void);
-BOOL kConvertScanCodeAndPutQueue(BYTE bScanCode);
-BOOL kGetKeyFromKeyQueue(KEYDATA* pstData);
+
 
 #endif
