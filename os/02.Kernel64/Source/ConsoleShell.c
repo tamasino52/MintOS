@@ -20,6 +20,16 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "strtod", "String To Decial/Hex Convert", kStringToDecimalHexTest },
         { "shutdown", "Shutdown And Reboot OS", kShutdown },
 		{ "raisefault", "Raise Fault in 0x1ff000", kRaiseFault },
+		{ "stdcdt","dummy",},
+		{ "tdsccs","dummy",},
+		{ "totade","dummy",},
+		{ "hello","dummy",},
+		{ "shine","dummy",},
+		{ "ccno","dummy",},
+		{ "shutup","dummy",},
+		{ "cusin","dummy",},
+		{ "student","dummy",},
+	
 };
 
 void kClearScreenLine( int iX, int iY, int length )
@@ -56,6 +66,11 @@ void kStartConsoleShell( void )
 	int index = 0;
 	int maxIndex = 0;
 	int comPointer = 0;
+
+	int iSpaceIndex, iCount;
+	int iCommandBufferLength;
+	int indexBuffer[30];
+	int validCount = 0;
     
     // 프롬프트 출력
     kPrintf( CONSOLESHELL_PROMPTMESSAGE );
@@ -153,13 +168,103 @@ void kStartConsoleShell( void )
             // TAB은 공백으로 전환
             if( bKey == KEY_TAB )
             {
-                bKey = ' ';
+				bKey = ' ';
+
+				iCommandBufferLength = kStrLen( vcCommandBuffer );
+
+				for( iSpaceIndex = 0; iSpaceIndex < iCommandBufferLength; iSpaceIndex++ )
+				{
+					if( vcCommandBuffer[iSpaceIndex] == ' ' )
+					{
+						break;
+					}
+				}
+
+				iCount = sizeof( gs_vstCommandTable ) / sizeof( SHELLCOMMANDENTRY );
+
+				for( int i = 0; i < iCount; i++ )
+				{
+					if( kMemCmp( gs_vstCommandTable[i].pcCommand, vcCommandBuffer, iSpaceIndex ) == 0 )
+					{
+						indexBuffer[validCount] = i;
+						validCount++;
+					}
+				}
+
+				if( validCount == 1 )
+				{
+					kGetCursor( &iCursorX, &iCursorY );
+					kClearScreenLine( iCursorX, iCursorY, iSpaceIndex );
+
+					int tmp = indexBuffer[0];
+					int siz = kStrLen( gs_vstCommandTable[tmp].pcCommand );
+
+					kPrintf( "MINT64>%s", gs_vstCommandTable[tmp].pcCommand );
+					int leng=0;
+					while(*(gs_vstCommandTable[tmp].pcCommand+leng)!='\0')
+					{
+						vcCommandBuffer[leng]=*(gs_vstCommandTable[tmp].pcCommand+leng);
+						leng++;
+					}
+					iCommandBufferIndex=leng;
+				}
+				else if( validCount > 1 )
+				{
+					bKey = kGetCh();
+
+					if( bKey == KEY_TAB )
+					{
+						bKey=' ';
+						kPrintf("\n");
+						kGetCursor( &iCursorX, &iCursorY );
+						kClearScreenLine( iCursorX, iCursorY, iSpaceIndex );
+
+						for( int i = 0; i < validCount; i++ )
+						{
+							int tmp = indexBuffer[i];
+							kPrintf( "%s ", gs_vstCommandTable[tmp].pcCommand );
+						}
+						kPrintf("\nMINT64>");
+						//int leng=0;
+						
+           					kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
+					
+           					iCommandBufferIndex = 0;
+						comPointer = index - 1;
+
+						bKey = kGetCh();
+						
+					/*	char tmpcommand[30];
+						while(vcCommandBuffer[leng]!=' ')
+						{
+							kPrintf("%c",vcCommandBuffer[leng]);
+							tmpcommand[leng]=vcCommandBuffer[leng];
+
+							leng++;
+						}*/	
+						/*while(vcCommandBuffer[leng]!='\0')
+						{
+							vcCommandBuffer[leng]=tmpcommand[leng];
+							leng++;
+						}*/
+						//aiCommandBufferIndex=leng;
+						
+					}
+				
+				}
+				for( int i = 0; i < validCount; i++ )
+				{
+					indexBuffer[i] = 0;
+				}
+				validCount = 0;
             }
             
             // 버퍼에 공간이 남아있을 때만 가능
             if( iCommandBufferIndex < CONSOLESHELL_MAXCOMMANDBUFFERCOUNT )
             {
+		   // kPrintf("%d",iCommandBufferIndex);
                 vcCommandBuffer[ iCommandBufferIndex++ ] = bKey;
+		
                 kPrintf( "%c", bKey );
             }
         }
