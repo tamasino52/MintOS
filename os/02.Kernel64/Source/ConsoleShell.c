@@ -121,7 +121,7 @@ void kStartConsoleShell( void )
 			comPointer = index - 1;
         }
 		else if( bKey == KEY_UP )
-		{
+		{ // UP 키가 눌려졌다면 preCommand에 저장된 명령어 히스토리를 순회하여 이전에 입력했던 명령어를 불러옴
 			if( comPointer < 0 )
 			{
 				comPointer = maxIndex - 1;
@@ -170,8 +170,10 @@ void kStartConsoleShell( void )
             {
 				bKey = ' ';
 
+				//현재 입력중이던 명령어의 길이를 반환받음
 				iCommandBufferLength = kStrLen( vcCommandBuffer );
 
+				// 현재 입력중이던 명령어가 저장된 버퍼의 공백인 인덱스를 iSpaceIndex 변수에 저장
 				for( iSpaceIndex = 0; iSpaceIndex < iCommandBufferLength; iSpaceIndex++ )
 				{
 					if( vcCommandBuffer[iSpaceIndex] == ' ' )
@@ -180,8 +182,10 @@ void kStartConsoleShell( void )
 					}
 				}
 
+				// 커맨드 테이블에 있는 엔트리의 갯수를 저장
 				iCount = sizeof( gs_vstCommandTable ) / sizeof( SHELLCOMMANDENTRY );
 
+				// 커맨드 테이블을 순회하며 현재 입력중이던 명령어 버퍼와 일치하는지 비교하며 순회하여 유효한 명령어의 인덱스를 indexBuffer에 저장
 				for( int i = 0; i < iCount; i++ )
 				{
 					if( kMemCmp( gs_vstCommandTable[i].pcCommand, vcCommandBuffer, iSpaceIndex ) == 0 )
@@ -191,6 +195,7 @@ void kStartConsoleShell( void )
 					}
 				}
 
+				// 유효한 명령어가 1개일 때 곧바로 vcCommandBuffer에 해당 명령어를 입력
 				if( validCount == 1 )
 				{
 					kGetCursor( &iCursorX, &iCursorY );
@@ -199,6 +204,7 @@ void kStartConsoleShell( void )
 					int tmp = indexBuffer[0];
 					int siz = kStrLen( gs_vstCommandTable[tmp].pcCommand );
 
+					// 현재 콘솔 명령어 입력 부분에 후보로 확정된 유효 명령어를 출력.
 					kPrintf( "MINT64>%s", gs_vstCommandTable[tmp].pcCommand );
 					int leng=0;
 					while(*(gs_vstCommandTable[tmp].pcCommand+leng)!='\0')
@@ -209,9 +215,9 @@ void kStartConsoleShell( void )
 					iCommandBufferIndex=leng;
 				}
 				else if( validCount > 1 )
-				{
+				{ // 유효한 명령어가 2개 이상일 때 유효 명령어 후보군을 콘솔에 출력 후 다음 명령어를 기다림
 					bKey = kGetCh();
-
+					// 탭키가 한 번 더 눌러지기까지 대기
 					if( bKey == KEY_TAB )
 					{
 						bKey=' ';
@@ -219,19 +225,19 @@ void kStartConsoleShell( void )
 						kGetCursor( &iCursorX, &iCursorY );
 						kClearScreenLine( iCursorX, iCursorY, iSpaceIndex );
 
+						// 입력한 명령어와 유사한 명령어들의 인덱스를 저장하였으므로 이를 토대로 후보군을 출력
 						for( int i = 0; i < validCount; i++ )
 						{
 							int tmp = indexBuffer[i];
 							kPrintf( "%s ", gs_vstCommandTable[tmp].pcCommand );
 						}
+
+						// 출력 후 재입력을 위해 콘솔 명령어 창을 비워준 후 입력이 들어오길 대기
 						kPrintf("\nMINT64>");
 						//int leng=0;
-						
-           					kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
-					
-           					iCommandBufferIndex = 0;
+						kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
+						iCommandBufferIndex = 0;
 						comPointer = index - 1;
-
 						bKey = kGetCh();
 						
 					/*	char tmpcommand[30];
@@ -252,6 +258,7 @@ void kStartConsoleShell( void )
 					}
 				
 				}
+				// 인덱스를 저장한 버퍼를 0으로 초기화
 				for( int i = 0; i < validCount; i++ )
 				{
 					indexBuffer[i] = 0;
