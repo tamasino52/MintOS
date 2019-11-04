@@ -1,346 +1,84 @@
-[BITS 64]
+# file      Assembly Utility
+# date      2009/01/07
+# author    kkamagui 
+#           Copyright(c)2008 All rights reserved by kkamagui
+# brief     어셈블리어 유틸리티 함수에 관련된 소스 파일
 
-SECTION .text
+[BITS 64]           ; 이하의 코드는 64비트 코드로 설정
 
-global kInPortByte, kOutPortByte, kInPortWord, kOutPortWord
-global kLoadGDTR, kLoadTR, kLoadIDTR
+SECTION .text       ; text 섹션(세그먼트)을 정의
+
+; C 언어에서 호출할 수 있도록 이름을 노출함(Export)
+global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
-global kReadTSC
-global kSwitchContext, kHlt, kTestAndSet, kPause
-global kInitializeFPU, kSaveFPUContext, kLoadFPUContext, kSetTS, kClearTS
-global kEnableGlobalLocalAPIC
-global kReadMSR, kWriteMSR
 
-; read from port
-; @param port number
+; 포트로부터 1바이트를 읽음
+;   PARAM: 포트 번호
 kInPortByte:
-	push rdx
+    push rdx        ; 함수에서 임시로 사용하는 레지스터를 스택에 저장
+                    ; 함수의 마지막 부분에서 스택에 삽입된 값을 꺼내 복원
 
-	mov rdx, rdi
-	mov rax, 0
+    mov rdx, rdi    ; RDX 레지스터에 파라미터 1(포트 번호)를 저장
+    mov rax, 0      ; RAX 레지스터를 초기화
+    in al, dx       ; DX 레지스터에 저장된 포트 어드레스에서 한 바이트를 읽어
+                    ; AL 레지스터에 저장, AL 레지스터는 함수의 반환 값으로 사용됨
 
-	in al, dx
+    pop rdx         ; 함수에서 사용이 끝난 레지스터를 복원
+    ret             ; 함수를 호출한 다음 코드의 위치로 복귀
 
-	pop rdx
-	ret
-
-; write to port
-; @param port number, data
+; 포트에 1바이트를 씀
+;   PARAM: 포트 번호, 데이터
 kOutPortByte:
-	push rdx
-	push rax
+    push rdx        ; 함수에서 임시로 사용하는 레지스터를 스택에 저장
+    push rax        ; 함수의 마지막 부분에서 스택에 삽입된 값을 꺼내 복원
 
-	mov rdx, rdi
-	mov rax, rsi
+    mov rdx, rdi    ; RDX 레지스터에 파라미터 1(포트 번호)를 저장
+    mov rax, rsi    ; RAX 레지스터에 파라미터 2(데이터)를 저장
+    out dx, al      ; DX 레지스터에 저장된 포트 어드레스에 AL 레지스터에 저장된
+                    ; 한 바이트를 씀
 
-	out dx, al
+    pop rax         ; 함수에서 사용이 끝난 레지스터를 복원
+    pop rdx
+    ret             ; 함수를 호출한 다음 코드의 위치로 복귀
 
-	pop rax
-	pop rdx
-	ret
 
-; read 2 bytes from port
-; @param port number
-kInPortWord:
-	push rdx
-
-	mov rdx, rdi
-	mov rax, 0
-	
-	in ax, dx
-
-	pop rdx
-	ret
-
-; write 2 bytes to port
-; @param port number, data
-kOutPortWord:
-	push rdx
-	push rax
-
-	mov rdx, rdi
-	mov rax, rsi
-
-	out dx, ax
-
-	pop rax
-	pop rdx
-	ret
-
-; set GDT Table to GDTR register
-; @param address of GDT Table Data Structure
+; GDTR 레지스터에 GDT 테이블을 설정
+;   PARAM: GDT 테이블의 정보를 저장하는 자료구조의 어드레스
 kLoadGDTR:
-	lgdt [ rdi ]
-	ret
+    lgdt [ rdi ]    ; 파라미터 1(GDTR의 어드레스)를 프로세서에 로드하여
+                    ; GDT 테이블을 설정
+    ret
 
-; set TSS Segment Descriptor to TR register
-; @param TSS Segment descriptor offset
+; TR 레지스터에 TSS 세그먼트 디스크립터 설정
+;   PARAM: TSS 세그먼트 디스크립터의 오프셋
 kLoadTR:
-	ltr di
-	ret
+    ltr di          ; 파라미터 1(TSS 세그먼트 디스크립터의 오프셋)을 프로세서에
+                    ; 설정하여 TSS 세그먼트를 로드
+    ret
 
-; set IDT Table to IDTR register
-; @param address of IDT Table Data Structure
+; IDTR 레지스터에 IDT 테이블을 설정
+;   PARAM: IDT 테이블의 정보를 저장하는 자료구조의 어드레스
 kLoadIDTR:
-	lidt [ rdi ]
-	ret
+    lidt [ rdi ]    ; 파라미터 1(IDTR의 어드레스)을 프로세서에 로드하여
+                    ; IDT 테이블을 설정
+    ret
 
-; Enable Interrupt
-; @param
+; 인터럽트를 활성화
+;   PARAM: 없음
 kEnableInterrupt:
-	sti
-	ret
+    sti             ; 인터럽트를 활성화
+    ret
 
-; Disable Interrupt
-; @param
+; 인터럽트를 비활성화
+;   PARAM: 없음
 kDisableInterrupt:
-	cli
-	ret
+    cli             ; 인터럽트를 비활성화
+    ret
 
-; Read RFLAGS
-; @param
+; RFLAGS 레지스터를 읽어서 되돌려줌
+;   PARAM: 없음
 kReadRFLAGS:
-	pushfq
-	pop rax
-	ret
-
-; return time stamp counter
-; @param
-kReadTSC:
-	push rdx
-
-	rdtsc
-
-	shl rdx, 32
-	or rax, rdx
-
-	pop rdx
-	ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Function for Task
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; macro that saves context and changes selector
-%macro KSAVECONTEXT 0
-	push rbp
-	push rax
-	push rbx
-	push rcx
-	push rdx
-	push rdi
-	push rsi
-	push r8
-	push r9
-	push r10
-	push r11
-	push r12
-	push r13
-	push r14
-	push r15
-
-	mov ax, ds
-	push rax
-	mov ax, es
-	push rax
-	push fs
-	push gs
-%endmacro
-
-%macro KLOADCONTEXT 0
-	pop gs
-	pop fs
-	pop rax
-	mov es, ax
-	pop rax
-	mov ds, ax
-
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop r11
-	pop r10
-	pop r9
-	pop r8
-	pop rsi
-	pop rdi
-	pop rdx
-	pop rcx
-	pop rbx
-	pop rax
-	pop rbp
-%endmacro
-
-; Save context to Current Context
-; and load context from Next Context
-; @param Current Context, Next Context
-kSwitchContext:
-	push rbp
-	mov rbp, rsp
-
-	pushfq		; save RFLAGS to not change by cmp
-	cmp rdi, 0
-	je .LoadContext
-	popfq		; load RFLAGS
-
-	push rax
-
-	mov ax, ss
-	mov qword[rdi + (23 * 8)], rax
-
-	mov rax, rbp		; save RSP except rbp, return address
-	add rax, 16
-	mov qword[rdi + (22 * 8)], rax
-
-	pushfq				; save RFLAGS
-	pop rax
-	mov qword[rdi + (21 * 8)], rax
-
-	mov ax, cs
-	mov qword[rdi + (20 * 8)], rax
-
-	mov rax, qword[rbp + 8]		; save return address to RIP register
-	mov qword[rdi + (19 * 8)], rax
-
-	pop rax
-	pop rbp
-
-	add rdi, (19 * 8)
-	mov rsp, rdi
-	sub rdi, (19 * 8)
-
-	KSAVECONTEXT
-
-.LoadContext:
-	mov rsp, rsi
-
-	KLOADCONTEXT
-	iretq
-
-; Halt Processor
-; @param
-kHlt:
-	hlt
-	hlt
-	ret
-
-; Pause Processor
-; @param
-kPause:
-	pause
-	ret
-
-; Atomic Test and Set
-; Compare Destination with Compare and set Source to Destination when same
-; @param Destination, Compare, Source
-kTestAndSet:
-	mov rax, rsi
-
-	lock cmpxchg byte[rdi], dl
-	je .SUCCESS
-
-.NOTSAME:
-	mov rax, 0x00
-	ret
-
-.SUCCESS:
-	mov rax, 0x01
-	ret
-
-;;;;;;;;;;;;;;;;;;;;
-; FPU Functions
-;;;;;;;;;;;;;;;;;;;;
-
-; Init FPU
-; @param
-kInitializeFPU:
-	finit
-	ret
-
-; Save FPU Context to Buffer
-; @param Buffer
-kSaveFPUContext:
-	fxsave [rdi]
-	ret
-
-; Load FPU Context from Buffer
-; @param Buffer
-kLoadFPUContext:
-	fxrstor [rdi]
-	ret
-
-; Set TS bit of CR0 to 1
-; @param
-kSetTS:
-	push rax
-
-	mov rax, cr0
-	or rax, 0x08
-	mov cr0, rax
-
-	pop rax
-	ret
-
-; Set TS bit of CR0 to 0
-; @param
-kClearTS:
-	clts
-	ret
-
-; Enable APIC to set IA32_APIC_BASE MSR register bit 11 to 1
-; @param
-kEnableGlobalLocalAPIC:
-	push rax
-	push rcx
-	push rdx
-
-	mov rcx, 27		; register address 27
-	rdmsr			; MSR use edx(upper 32) and eax(lower 32)
-
-	or eax, 0x0800
-	wrmsr
-
-	pop rdx
-	pop rcx
-	pop rax
-	ret
-
-; Read from MSR register
-; @param QWORD qwMSRAddress, QWORD* pqwRDX, QWORD* pqwRAX
-kReadMSR:
-	push rdx
-	push rax
-	push rcx
-	push rbx
-
-	mov rbx, rdx
-	mov rcx, rdi
-
-	rdmsr
-
-	mov qword [ rsi ], rdx
-	mov qword [ rbx ], rax
-
-	pop rbx
-	pop rcx
-	pop rax
-	pop rdx
-	ret
-
-; Write to MSR register
-; @param QWORD qwMSRAddress, QWORD pqwRDX, QWORD pqwRAX
-kWriteMSR:
-	push rdx
-	push rax
-	push rcx
-
-	mov rcx, rdi
-	mov rax, rdx
-	mov rdx, rsi
-
-	wrmsr
-
-	pop rcx
-	pop rax
-	pop rdx
-	ret
+    pushfq                  ; RFLAGS 레지스터를 스택에 저장
+    pop rax                 ; 스택에 저장된 RFLAGS 레지스터를 RAX 레지스터에 저장하여
+                            ; 함수의 반환 값으로 설정
+    ret
