@@ -151,5 +151,6 @@ void kSchedule(void);
 BOOL kScheduleInInterrupt(void);
 void kDecreaseProcessorTime(void);
 BOOL kIsProcessorTimeExpired(void);
+TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 
 #endif

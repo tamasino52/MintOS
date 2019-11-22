@@ -66,7 +66,7 @@ void kTestTask1(void)
 {
 	BYTE bData;
 	int i = 0, iX = 0, iY = 0, iMargin;
-	CHARACTER* pstScreen = (CHARACTER)CONSOLE_VIDEOMEMORYADDRESS;
+	CHARACTER* pstScreen = (CHARACTER*) CONSOLE_VIDEOMEMORYADDRESS;
 	TCB* pstRunningTask;
 
 	// 자신 ID를 얻어서 화면오프셋으로 사용
@@ -122,7 +122,7 @@ void kTestTask2(void)
 {
 	int i = 0, iOffset;
 	CHARACTER* pstScreen = (CHARACTER*)CONSOLE_VIDEOMEMORYADDRESS;
-	TCB pstRunningTask;
+	TCB* pstRunningTask;
 	char vcData[4] = { '-','＼','|','/' };
 
 	// 자신의 ID를 얻어서 화면 오프셋으로 사용
@@ -160,7 +160,7 @@ void kCreateTestTask(const char* pcParameterBuffer)
 	case 1:
 		for (i = 0; i < kAToI(vcCount, 10); i++)
 		{
-			if (kCreateTestTask(0, (QWORD)kTestTask1) == NULL)
+			if (kCreateTask(0, (QWORD)kTestTask1) == NULL)
 			{
 				break;
 			}
@@ -171,7 +171,7 @@ void kCreateTestTask(const char* pcParameterBuffer)
 	case 2:
 		for (i = 0; i < kAToI(vcCount, 10); i++)
 		{
-			if (kCreateTestTask(0, (QWORD)kTestTask2) == NULL)
+			if (kCreateTask(0, (QWORD)kTestTask2) == NULL)
 			{
 				break;
 			}

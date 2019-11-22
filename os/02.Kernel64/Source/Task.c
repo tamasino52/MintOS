@@ -80,8 +80,7 @@ void kInitializeTCBPool(void)
 	kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
 }
 
-TCB* kCreateTask(QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
-	QWORD qwEntryPointAddress, BYTE bAffinity)
+TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 {
 	TCB* pstTask, * pstProcess;
 	void* pvStackAddress;
