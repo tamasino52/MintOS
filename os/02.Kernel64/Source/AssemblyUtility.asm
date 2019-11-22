@@ -4,7 +4,7 @@
 #           Copyright(c)2008 All rights reserved by kkamagui
 # brief     어셈블리어 유틸리티 함수에 관련된 소스 파일
 
-QWORD kReadTSC(void);
+QWORD kReadTSC( void );
 
 [BITS 64]           ; 이하의 코드는 64비트 코드로 설정
 
