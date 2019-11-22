@@ -4,7 +4,7 @@
 #include "Descriptor.h"
 #include "Console.h"
 
-void kSetupTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress,
+void kSetUpTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress,
 		void* pvStackAddress, QWORD qwStackSize)
 {
 	kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
