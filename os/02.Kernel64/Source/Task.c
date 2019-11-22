@@ -197,7 +197,7 @@ void kSchedule(void)
 	}
 		
 	pstRunningTask = gs_stScheduler.pstRunningTask;
-	kAddTaskToRunList(pstRunningTask);
+	//kAddTaskToRunList(pstRunningTask);
 	// 프로세서 사용 시죠떨 업데이트
 	gs_stScheduler.iProcessorTime = TASK_PROCESSORTIME;
 	
