@@ -28,6 +28,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{"rdtsc","Read Time Stamp Counter", kReadTimeStampCounter},
 		{"cpuspeed","Measure Processor Speed",kMeasureProcessorSpeed},
 		{"date","Show Date And TIme",kShowDateAndTime},
+		{"rand","Generate Random Number", kRand},
 		{ "stdcdt","dummy",},
 		{ "tdsccs","dummy",},
 		{ "totade","dummy",},
@@ -39,6 +40,14 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "student","dummy",},
 	
 };
+
+void kRand(const char* pcParameterBuffer)
+{
+	static long holdrand = 1L;
+	int randvalue = (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+	kPrintf("Rand: %d\n",randvalue);
+}
+
 
 //PIT 컨트롤러의 카운터 0 설정
 void kSetTimer(const char* pcParameterBuffer)
