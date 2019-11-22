@@ -67,7 +67,7 @@ void kCreateTestTask(const char* pcParameterBuffer)
 	int i = 0;
 
 	//태스크 설정
-	kSetUpTask(&(gs_vstTask[1]), 1, 0, (QWORD)kTestTask, &(gs_vstStack), sizeof(gs_vstStack));
+	kSetUpTask( &( gs_vstTask[1] ), 1, 0, (QWORD) kTestTask, &( gs_vstStack ), sizeof(gs_vstStack) );
 
 	//'q' 키가 입력되지 않을 떄까지 수행
 	while(1)

@@ -101,7 +101,6 @@ typedef struct kTaskControlBlockStruct
 
 // Task Functions
 
-void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress,
-	void* pvStackAddress, QWORD qwStackSize);
+void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
 
 #endif
