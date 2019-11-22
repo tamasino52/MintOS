@@ -91,7 +91,7 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 	// allocate stack
 	pvStackAddress = (void*)(TASK_STACKPOOLADDRESS + (TASK_STACKSIZE * (pstTask->stLink.qwID & 0xFFFFFFFF)));
 
-	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
+	kSetUpTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
 	kAddTaskToReadyList(pstTask);
 
 	return pstTask;
