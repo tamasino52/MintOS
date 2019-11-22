@@ -49,7 +49,7 @@ Disk.img: 00.BootLoader/BootLoader.bin 01.Kernel32/Kernel32.bin 02.Kernel64/Kern
 	@echo =========== Disk Image Build Start ===========
 	@echo 
 
-	./ImageMaker $^
+	./ImageMaker.exe $^
 
 	@echo 
 	@echo ============= All Build Complete =============
@@ -67,9 +67,6 @@ Utility:
 	@echo =========== Utility Build Complete ===========
 	@echo 
 	
-run:
-	qemu-system-x86_64 -L . -fda Disk.img -m 64 -localtime -M pc
-	qemu-system-x86_64 -rtc base=localtime
 	
 # 소스 파일을 제외한 나머지 파일 정리	
 clean:
