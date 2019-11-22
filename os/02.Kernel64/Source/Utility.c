@@ -25,6 +25,11 @@ void kMemSet( void* pvDestination, BYTE bData, int iSize )
     }
 }
 
+QWORD kGetTickCount(void)
+{
+	return g_qwTickCount;
+}
+
 /**
  *  메모리 복사
  */

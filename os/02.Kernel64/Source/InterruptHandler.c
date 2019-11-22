@@ -107,7 +107,7 @@ void kTimerHandler(int iVectorNumber)
 	//=====================================================================
 
 	kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
-	g_qwTinkCount++;
+	g_qwTickCount++;
 
 	kDecreaseProcessorTime();
 	if (kIsProcessorTimeExpired() == TRUE)
