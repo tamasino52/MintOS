@@ -47,7 +47,7 @@ void kSetTimer(const char* pcParameterBuffer)
 	char vcParameter[100];
 	PARAMETERLIST stList;
 	long lValue;
-	Bool bPeriodic;
+	bool bPeriodic;
 
 	//파라미터 초기화
 	kInitializeParameter(&stList, pcParameterBuffer);
@@ -63,12 +63,12 @@ void kSetTimer(const char* pcParameterBuffer)
 	//Periodic 추출
 	if (kGetNextParameter(&stList, vcParameter) == 0)
 	{
-		kPrintf(’‘ex)settimer 10(ms)1(periodic)\n" );
+		kPrintf("ex)settimer 10(ms)1(periodic)\n" );
 			return;
 	}
 	bPeriodic = kAToI(vcParameter, 10);
-	klnitia1izePIT(MSTOCOUNT(1Va1ue), bPeriodic);
-	kPrintf("Time = 생 ms , Periodic = %d Change Comp1ete\n'’, 1Va1ue, bPeriodic );
+	kInitializePIT(MSTOCOUNT(lValue), bPeriodic);
+	kPrintf("Time = %d ms , Periodic = %d Change Complete\n", lValue, bPeriodic);
 }
 // PIT 컨트롤러를 직접 사용하여 ms 동안 대기
 void kWaitUsingPIT(const char* pcParameterBuffer)
@@ -83,7 +83,7 @@ void kWaitUsingPIT(const char* pcParameterBuffer)
 	klnitializeParameter(&stList, pcParameterBuffer);
 	if (kGetNextParameter(&stList, vcParameter) == 0)
 	{
-		kPrintf("ex)wait 100(ms)\n “ ) ;
+		kPrintf("ex)wait 100(ms)\n");
 		return;
 	}
 	
