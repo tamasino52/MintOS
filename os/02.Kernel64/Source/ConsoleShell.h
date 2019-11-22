@@ -90,6 +90,6 @@ void kShowDateAndTime(const char* pcParameterBuffer);
 
 void kRand(const char* pcParameterBuffer);
 
-
+void kCreateTestTask(const char* pcParameterBuffer);
 
 #endif /*__CONSOLESHELL_H__*/
