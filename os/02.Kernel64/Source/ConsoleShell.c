@@ -43,7 +43,11 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 
 void kRand(const char* pcParameterBuffer)
 {
-	static long holdrand = 1L;
+	BYTE bSecond, bMinute, bHour;
+	// RTC 컨트롤러에서 시간 및 일자를 읽음
+	kReadRTCTime(&bHour, &bMinute, &bSecond);
+
+	static long holdrand = 1L + bSecond;
 	int randvalue = (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 	kPrintf("Rand: %d\n",randvalue);
 }
