@@ -10,8 +10,10 @@
 #include "Keyboard.h"
 #include "Descriptor.h"
 #include "PIC.h"
+#include "RTC.h"
 #include "Console.h"
 #include "ConsoleShell.h"
+#include "AssemblyUtility.h"
 
 /**
  *  아래 함수는 C 언어 커널의 시작 부분임
