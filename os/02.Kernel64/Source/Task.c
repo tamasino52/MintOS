@@ -187,25 +187,24 @@ void kSchedule(void)
 	}
 	// 전환하는 도중 인터럽트가 발생하여 태스크 전환이 또 일어나면 곤란하므로
 	// 전환하는 동안 인터럽트가 발생하지 못하도록 설정
-	bPreviousFlag = kSetlnterruptFlag(FALSE);
+	bPreviousFlag = kSetInterruptFlag(FALSE);
 	// 실행할 다음 태스크를 얻음
 	pstNextTask = kGetNextTaskToRun();
 	if (pstNextTask == NULL)
 	{
-		kSetlnterruptFlag(bPreviousFlag);
+		kSetInterruptFlag(bPreviousFlag);
 		return;
 	}
 		
 	pstRunningTask = gs_stScheduler.pstRunningTask;
 	kAddTaskToRunList(pstRunningTask);
-	
 	// 프로세서 사용 시죠떨 업데이트
 	gs_stScheduler.iProcessorTime = TASK_PROCESSORTIME;
 	
 	// 다음 태스크를 현재 수행 중인 태스크로 설정한 후 콘텍스트 전환
 	gs_stScheduler.pstRunningTask = pstNextTask;
 	kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
-	kSetlnterruptFlag(bPreviousFlag);
+	kSetInterruptFlag(bPreviousFlag);
 
 }
 
