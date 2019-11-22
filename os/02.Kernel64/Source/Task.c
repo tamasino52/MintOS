@@ -79,7 +79,7 @@ void kInitializeTCBPool(void)
 
 TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 {
-	TCB* pstTask, * pstProcess;
+	TCB* pstTask;
 	void* pvStackAddress;
 
 	pstTask = kAllocateTCB();
