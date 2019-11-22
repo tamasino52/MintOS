@@ -98,7 +98,7 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 }
 
 
-void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress,
+void kSetUpTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress,
 		void* pvStackAddress, QWORD qwStackSize)
 {
 	kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
@@ -124,7 +124,6 @@ void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddres
 	pstTCB->stContext.vqRegister[TASK_RFLAGSOFFSET] |= 0x0200;
 
 	// save ID, stack, flags
-	pstTCB->qwID= qwID;
 	pstTCB->pvStackAddress = pvStackAddress;
 	pstTCB->qwStackSize = qwStackSize;
 	pstTCB->qwFlags = qwFlags;
