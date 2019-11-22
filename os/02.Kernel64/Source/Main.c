@@ -55,7 +55,7 @@ void Main(void)
 	kSetCursor(45, iCursorY++);
 	kPrintf("Pass], Size = %d MB\n", kGetTotalRAMSize());
 
-	kPrintf("TCB Pool And Scheduler Initialize........................[Pass]\n");
+	kPrintf("TCB Pool And Scheduler Initialize...........[Pass]\n");
 	iCursorY++;
 	kInitializeScheduler();
 	kInitializePIT(MSTOCOUNT(1), 1);

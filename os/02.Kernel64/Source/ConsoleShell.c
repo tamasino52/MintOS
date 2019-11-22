@@ -138,7 +138,7 @@ void kTestTask2(void)
 		i++;
 
 		//다른 태스크로 전환
-		kSchedule();
+		//kSchedule();
 	}
 }
 
