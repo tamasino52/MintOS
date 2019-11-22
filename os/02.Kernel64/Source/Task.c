@@ -4,6 +4,148 @@
 #include "Descriptor.h"
 #include "Console.h"
 
+// 스케쥴러 관련 자료구조
+static SCHEDULER gs_vstScheduler;
+static TCBPOOLMANAGER gs_stTCBPoolManager;
+
+
+//===================================
+//  태스트 풀과 태스크 관련
+//===================================
+
+void kInitializeTCBPool(void)
+{
+	int i;
+
+	kMemSet(&(gs_stTCBPoolManager), 0, sizeof(gs_stTCBPoolManager));
+
+	gs_stTCBPoolManager.pstStartAddress = (TCB*)TASK_TCBPOOLADDRESS;
+	kMemSet((void*)TASK_TCBPOOLADDRESS, 0, sizeof(TCB) * TASK_MAXCOUNT);
+
+	for (i = 0; i < TASK_MAXCOUNT; i++)
+	{
+		gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID = i;
+	}
+
+	gs_stTCBPoolManager.iMaxCount = TASK_MAXCOUNT;
+	gs_stTCBPoolManager.iAllocatedCount = 1;
+	kInitializeSpinLock(&gs_stTCBPoolManager.stSpinLock);
+}
+
+ TCB* kAllocateTCB(void)
+{
+	TCB* pstEmptyTCB;
+	int i;
+
+	kLockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+
+	if (gs_stTCBPoolManager.iUseCount == gs_stTCBPoolManager.iMaxCount)
+	{
+		kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+		return NULL;
+	}
+
+	for (i = 0; i < gs_stTCBPoolManager.iMaxCount; i++)
+	{
+		if ((gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID >> 32) == 0)
+		{
+			pstEmptyTCB = &(gs_stTCBPoolManager.pstStartAddress[i]);
+			break;
+		}
+	}
+
+	// set TCB
+	pstEmptyTCB->stLink.qwID = ((QWORD)gs_stTCBPoolManager.iAllocatedCount << 32) | i;
+	gs_stTCBPoolManager.iUseCount++;
+	gs_stTCBPoolManager.iAllocatedCount++;
+	if (gs_stTCBPoolManager.iAllocatedCount == 0)
+	{
+		gs_stTCBPoolManager.iAllocatedCount = 1;
+	}
+
+	kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+	return pstEmptyTCB;
+}
+
+
+ void kFreeTCB(QWORD qwID)
+{
+	int i;
+
+	i = GETTCBOFFSET(qwID);
+	kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i].stContext), 0, sizeof(CONTEXT));
+	kLockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+	gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID = i;
+	gs_stTCBPoolManager.iUseCount--;
+	kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+}
+
+TCB* kCreateTask(QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
+	QWORD qwEntryPointAddress, BYTE bAffinity)
+{
+	TCB* pstTask, * pstProcess;
+	void* pvStackAddress;
+	BYTE bCurrentAPICID;
+
+	bCurrentAPICID = kGetAPICID();
+
+	if ((pstTask = kAllocateTCB()) == NULL)
+		return NULL;
+
+	// allocate stack
+	if ((pvStackAddress = kAllocateMemory(TASK_STACKSIZE)) == NULL)
+	{
+		kFreeTCB(pstTask->stLink.qwID);
+		return NULL;
+	}
+
+	kLockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
+
+	pstProcess = kGetProcessByThread(kGetRunningTask(bCurrentAPICID));
+	if (pstProcess == NULL)
+	{
+		kFreeTCB(pstTask->stLink.qwID);
+		kFreeMemory(pvStackAddress);
+		kUnlockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
+		return NULL;
+	}
+
+	if (qwFlags & TASK_FLAGS_THREAD)
+	{
+		pstTask->qwParentProcessID = pstProcess->stLink.qwID;
+		pstTask->pvMemoryAddress = pstProcess->pvMemoryAddress;
+		pstTask->qwMemorySize = pstProcess->qwMemorySize;
+
+		// not TCB link but thread link
+		kAddListToTail(&(pstProcess->stChildThreadList), &(pstTask->stThreadLink));
+	}
+	else
+	{
+		pstTask->qwParentProcessID = pstProcess->stLink.qwID;
+		pstTask->pvMemoryAddress = pvMemoryAddress;
+		pstTask->qwMemorySize = qwMemorySize;
+	}
+
+	pstTask->stThreadLink.qwID = pstTask->stLink.qwID;
+
+	kUnlockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
+
+	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress,
+		TASK_STACKSIZE);
+
+	kInitializeList(&(pstTask->stChildThreadList));
+
+	pstTask->bFPUUsed = FALSE;
+
+	pstTask->bAPICID = bCurrentAPICID;
+	pstTask->bAffinity = bAffinity;
+
+	kAddTaskToSchedulerWithLoadBalancing(pstTask);
+
+	return pstTask;
+}
+
+
 void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress,
 		void* pvStackAddress, QWORD qwStackSize)
 {
@@ -34,4 +176,137 @@ void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddres
 	pstTCB->pvStackAddress = pvStackAddress;
 	pstTCB->qwStackSize = qwStackSize;
 	pstTCB->qwFlags = qwFlags;
+}
+
+
+
+//===================================
+// 스케쥴러 관련
+//===================================
+// 스케쥴러 초기화
+
+
+void kInitializeScheduler(void)
+{
+	// 태스크 폴 초기화
+	kInitializeTCBPool();
+
+	//준비리스트 초기화
+	kInitializeList(&(gs_stScheduler.stReadyList));
+	
+	// TCB 할당받아 실행중인 태스크로 설정하여 부팅을 수행한 태스크를 저장할 TCB 준비
+	gs_stScheduler.pstRunningTask = kAllocateTCB();
+}
+
+void kSetRunningTask(TCB* pstTask)
+{
+	gs_stScheduler.pstRunningTask = pstTAsk
+}
+
+TCB* kGetRunningTask( void )
+{
+	return gs_stScheduler.pstRunningTask;
+}
+
+
+TCB* kGetNextTaskToRun(void)
+{
+	if (kGetListCount(&(gs_stScheduler.stReadyList)) == 0)
+	{
+		return NULL
+	}
+	return (TCB*)kRemoveListFromHeader(&(gs_stScheduler.stReadyList));
+}
+
+void kAddTaskToReadyList(TCB* pstTask)
+{
+	kAddListToTail(&(gs_stScheduler[bAPICID].stReadyList), pstTask);
+}
+
+
+void kSchedule(void)
+{
+	TCB* pstRunningTask, * pstNextTask;
+	BOOL bPreviousFlag;
+
+	// 전환할 태스크가 있어야 함
+	if (kGetListCount(&(gs_stScheduler.stReadyList)) == 0)
+	{
+		return;
+	}
+	// 전환하는 도중 인터럽트가 발생하여 태스크 전환이 또 일어나면 곤란하므로
+	// 전환하는 동안 인터럽트가 발생하지 못하도록 설정
+	bPreviousFlag = kSetlnterruptFlag(FALSE);
+	// 실행할 다음 태스크를 얻음
+	pstNextTask = kGetNextTaskToRun();
+	if (pstNextTask == NULL)
+	{
+		kSetlnterruptFlag(bPreviousFlag);
+		return;
+	}
+		
+	pstRunningTask = gs_stScheduler.pstRunningTask;
+	kAddTaskToRunList(pstRunningTask);
+	
+	// 프로세서 사용 시죠떨 업데이트
+	gs_stScheduler.iProcessorTime = TASK_PROCESSORTIME;
+	
+	// 다음 태스크를 현재 수행 중인 태스크로 설정한 후 콘텍스트 전환
+	gs_stScheduler.pstRunningTask = pstNextTask;
+	kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
+	kSetlnterruptFlag(bPreviousFlag)
+
+}
+
+// 인터럽트가 발생했을 때 / 다른 태스크를 참아 전환
+// 반드시 인터럽트나 예외가 발생했을 때 호출해야 함
+BOOL kScheduleInInterrupt(void)
+{
+	TCB* pstRunningTask, * pstNextTask;
+	char* pcContextAddress;
+
+	pstNextTask = kGetNextTaskToRun();
+	if (pstNextTask == NULL)
+	{
+		return FALSE;
+	}
+
+	// ==========================================================
+	// 태스크 전환 처리
+	// 인터럽트 핸들러에서 저장한 콘텍스트를 다른 콘텍스트로 덮어쓰는 방법으로 처리
+	// ==========================================================
+	pcContextAddress = (char*)IST_STARTADDRESS - sizeof(CONTEXT);
+
+	// 현재 태스크를 얻어서 1ST 어 | 있는 콘텍스트를 복사하고 현재 태스크를 준비 리스트로 옮김
+	pstRunningTask = gs_stScheduler.pstRunningTask;
+	kMemCpy(&(pstRunningTask->stContext), pcContextAddress, sizeof(CONTEXT));
+	kAddTaskToReadyList(pstRunningTask);
+
+	// 전환해서 실행할 태스크를 Running Task로 설정하고 콘텍스트를 1ST에 복사해서
+	// 자동으로 태스크 전환이 일어나도록 항
+	gs_stScheduler.pstRunningTask = pstNextTask;
+	kMemCpy(pcContextAddress , &(pstNextTask->stContext), sizeof(CONTEXT));
+
+	// 프로세서 사용 시간을 업데리트
+	gs_stScheduler.iProcessorTime = TASK_PROCESSORTIME;
+	return TRUE;
+}
+
+// 프로세서를 사용할 수 있는 시간을 하나 줄임
+void kDecreaseProcessorTime(void)
+{
+	if (gs_stScheduler.iProcessorTime > 0)
+	{
+		gs_stScheduler.iProcessorTime--;
+	}
+}
+
+// 프로세서를 사용할 수 있는 시간이 다 되었는지 여부를 반환
+BOOL kIsProcessorTimeExpired(void)
+{
+	if (gs_stScheduler.iProcessorTime <= 0)
+	{
+		return TRUE;
+	}
+	return FALSE;
 }

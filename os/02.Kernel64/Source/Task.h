@@ -2,6 +2,7 @@
 #define __TASK_H__
 
 #include "Types.h"
+#include "List.h"
 
 
 // 매크로
@@ -85,22 +86,70 @@ typedef struct kContextStruct
 // 태스크 상태 관리 자료구조
 typedef struct kTaskControlBlockStruct
 {
-	// 컨텍스트
-	CONTEXT stContext;
+	// 다음 데이터의 위치와 ID
+	LISTLINK stLink;
 
 	// ID 및 플래그
 	QWORD qwID;
 	QWORD qwFlags;
+
+	// 컨텍스트
+	CONTEXT stContext;
 
 	// 스택의 어드레스와 크기
 	void* pvStackAddress;
 	QWORD qwStackSize;
 } TCB;
 
+// TCB 풀의 상태를 관리하는 자료구조
+typedef struct KTCBPoolManagerStruct
+{
+	// 태스크 풀에 대한 정보
+	TCB* pstStartAddress;
+	int iMaxCount;
+	int iUseCount;
+
+	// TCB가 할당된 횟수
+	int iAllocatedCount;
+}TCBPOOLMANAGER;
+
+typedef struct kSchedulerStruct
+{
+	//현재 수행 중인 태스크
+	TCB pstRunningTask;
+
+	// 현재 수헹 중인 태스크가사용할 수 있는 프로세서 시간
+	int iProcessorTime;
+
+	//실행할 태스크가 준비중인 리스트
+	LIST stReadyList;
+}SCHEDULER;
+
+
+
 #pragma pack(pop)
 
-// Task Functions
+// ==========================================================
+// 태스크 풀과 태스크 관련
+// ==========================================================
 
 void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
+void kInitializeTCBPool(void);
+TCB* kAllocateTCB(void);
+void kFreeTCB(QWORD qwID);
 
+
+// ==========================================================
+// 스케쥴러 관련
+// ==========================================================
+void kInitializeScheduler(void);
+void kSetRunningTask(TCB* pstTask);
+TCB* kGetRunningTask(void);
+TCB* kGetNextTaskToRun(void);
+void kAddTaskToReadyList(TCB* pstTask);
+void kSchedule(void);
+BOOL kScheduleInInterrupt(void);
+void kDecreaseProcessorTime(void);
+BOOL kIsProcessorTimeExpired(void);
+{
 #endif

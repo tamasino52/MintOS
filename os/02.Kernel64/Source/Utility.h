@@ -33,4 +33,7 @@ int kDecimalToString( long lValue, char* pcBuffer );
 int kSPrintf( char* pcBuffer, const char* pcFormatString, ... );
 int kVSPrintf( char* pcBuffer, const char* pcFormatString, va_list ap );
 int kStrLen(const char* pcBuffer);
+QWORD kGetTickCount(void);
+extern volatile QWORD g_qwTinkCount;
+
 #endif /*__UTILITY_H__*/

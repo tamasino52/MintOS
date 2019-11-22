@@ -39,7 +39,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "shutup","dummy",},
 		{ "cusin","dummy",},
 		{ "student","dummy",},
-		{"createtask","Create Task", kCreateTestTask},
+		{"createtask","Create Task, ex)createtask 1(type) 10(count)", kCreateTestTask},
 };
 
 // TCB 자료구조와 스택 정의
@@ -61,10 +61,127 @@ void kTestTask(void)
 	}
 }
 
+// 태스크 1
+void kTestTask1(void)
+{
+	BYTE bData;
+	int i = 0, iX = 0, iY = 0, iMargin;
+	CHARACTER* pstScreen = (CHARACTER)CONSOLE_VIDEOMEMORYADDRESS;
+	TCB* pstRunningTask;
+
+	// 자신 ID를 얻어서 화면오프셋으로 사용
+	pstRunningTask = kGetRunningTask();
+	iMargin = (pstRunningTask->stLink.qwID & 0xFFFFFFFF) % 10;
+
+	// 화면 네 귀퉁이를 돌면서 문자 출력
+	while (1)
+	{
+		switch (i)
+		{
+		case 0:
+			iX++;
+			if (iX = (CONSOLE_WIDTH - iMargin))
+			{
+				i = 1;
+			}
+			break;
+		case 1:
+			iY++;
+			if (iY >= (CONSOLE_HEIGHT - iMargin))
+			{
+				i = 2;
+			}
+			break;
+		case 2:
+			iX--;
+			if (iX < iMargin)
+			{
+				i = 3;
+			}
+			break;
+		case 3:
+			iY--;
+			if (iY < iMargin)
+			{
+				i = 0;
+			}
+			break;
+		}
+		// 문자 및 색깔 지정
+		pstScreen[iY * CONSOLE_WIDTH + iX].bCharactor = bData;
+		pstScreen[iY * CONSOLE_WIDTH + iX].bAttribute = bData & 0x0F;
+		bData++;
+
+		// 다른 태스크로 전환
+		kSchedule();
+	}
+}
+
+// 태스크 2
+void kTestTask2(void)
+{
+	int i = 0, iOffset;
+	CHARACTER* pstScreen = (CHARACTER*)CONSOLE_VIDEOMEMORYADDRESS;
+	TCB pstRunningTask;
+	char vcData[4] = { '-','＼','|','/' };
+
+	// 자신의 ID를 얻어서 화면 오프셋으로 사용
+	pstRunningTask = kGetRunningTask();
+	iOffset = (pstRunningTask->stLink.qwID & 0xFFFFFFFF) * 2;
+	iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT - (iOffset % (CONSOLE_WIDTH * CONSOLE_HEIGHT));
+
+	while (1)
+	{
+		//회전 바람개비를 표시
+		pstScreen[iOffset].bCharactor = vcData[i % 4];
+		pstScreen[iOffset].bAttribute = (iOffset % 15) + 1;
+		i++;
+
+		//다른 태스크로 전환
+		kSchedule();
+	}
+}
+
 void kCreateTestTask(const char* pcParameterBuffer)
 {
-	KEYDATA  stData;
-	int i = 0;
+	PARAMETERLIST stList;
+	char vcType[30];
+	char vcCount[30];
+	int i;
+
+	//파라미터 추출
+	kInitializeParameter(&stList, pcParameterBuffer);
+	kGetNextParameter(&stList, vcType);
+	kGetNextParameter(&stList, vcCount);
+
+	switch (kAToI(vcType, 10))
+	{
+		// 태스크 1 생성
+	case 1:
+		for (i = 0; i < kAToI(vcCount, 10); i++)
+		{
+			if (kCreateTestTask(0, (QWORD)kTestTask1) == NULL)
+			{
+				break;
+			}
+		}
+		kPrintf("Task1 %d Created\n", i);
+		break;
+		// 태스크 2 생성
+	case 2:
+		for (i = 0; i < kAToI(vcCount, 10); i++)
+		{
+			if (kCreateTestTask(0, (QWORD)kTestTask2) == NULL)
+			{
+				break;
+			}
+		}
+		kPrintf("Task2 %d Created\n", i);
+		break;
+
+
+	}
+
 
 	//태스크 설정
 	kSetUpTask( &( gs_vstTask[1] ), 1, 0, (QWORD) kTestTask, &( gs_vstStack ), sizeof(gs_vstStack) );

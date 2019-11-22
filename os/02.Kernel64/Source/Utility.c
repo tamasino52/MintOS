@@ -10,6 +10,8 @@
 #include "AssemblyUtility.h"
 #include <stdarg.h>
 
+volatile QWORD g_qwTickCount = 0;
+
 /**
  *  메모리를 특정 값으로 채움
  */
