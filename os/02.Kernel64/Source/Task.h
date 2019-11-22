@@ -133,7 +133,7 @@ typedef struct kSchedulerStruct
 // 태스크 풀과 태스크 관련
 // ==========================================================
 
-void kSetUpTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
+void kSetUpTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
 void kInitializeTCBPool(void);
 TCB* kAllocateTCB(void);
 void kFreeTCB(QWORD qwID);
