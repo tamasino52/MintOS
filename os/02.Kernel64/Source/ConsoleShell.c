@@ -13,6 +13,7 @@
 #include "PIT.h"
 #include "RTC.h"
 #include "AssemblyUtility.h"
+#include "Task.h"
 
 // 커맨드 테이블 정의
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
@@ -38,8 +39,51 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "shutup","dummy",},
 		{ "cusin","dummy",},
 		{ "student","dummy",},
-	
+		{"createtask","Create Task", kCreateTestTask},
 };
+
+// TCB 자료구조와 스택 정의
+static TCB gs_vstTask[2] = { 0, };
+static QWORD gs_vstStack[1024] = { 0, };
+
+// 태스크 전환 테스트 테스크
+void kTestTask(void)
+{
+	int i = 0;
+	while (1)
+	{
+		// 메시지를 출력하고 키 입력을 대기
+		kPrintf("[%d] This message is from kTestTask. Press any key to switch kConsoleShell\n", i++);
+		kGetCh();
+
+		// 키 입력 시 태스크 전환
+		kSwitchContext(&(gs_vstTask[1].stContext), &(gs_vstTask[0].stContext));
+	}
+}
+
+void kCreateTestTask(const char* pcParameterBuffer)
+{
+	KEYDATA  stData;
+	int i = 0;
+
+	//태스크 설정
+	kSetUpTask(&gs_vstTask[1]), 1, 0, (QWORD)kTestTask, & gs_vstStack), sizeof(gs_vstStack));
+
+	//'q' 키가 입력되지 않을 떄까지 수행
+	while(1)
+	{
+		// 메시지 출력 후 키입력 대기
+		kPrintf("[%d] This message is from kConsoleShell . Press any key to switch TestTask\n", i++);
+		if (kGetCh() == 'q')
+		{
+			break;
+		}
+		// 위에서 키가 입력되면 태스크를 전환
+		kSwitchContext(&(gs_vstTask[0].stContext), &(gs_vstTask[1].stContext));
+	}
+}
+
+
 
 void kRand(const char* pcParameterBuffer)
 {

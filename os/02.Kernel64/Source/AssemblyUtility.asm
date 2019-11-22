@@ -13,6 +13,7 @@ SECTION .text       ; text 섹션(세그먼트)을 정의
 global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
+global kSwitchContext
 
 ; 포트로부터 1바이트를 읽음
 ;   PARAM: 포트 번호
@@ -95,3 +96,114 @@ kReadTSC:
 	pop rdx
 	
 	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 태스크 관련 어셈블리어 함수
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 콘텍스트를 저장하고 셀렉터를 교체하는 매크로
+%macro KSAVECONTEXT 0		; 파라미터를 전달받지 않는 KSAVECONTEXT 매크로 정의
+; RBP 레지스터 부터 GS 세그먼트 셀렉터까지 모두 스택에 삽입
+	push rbp
+	push rax
+	push rbx
+	push rcx
+	push rdx
+	push rdi
+	push rsi
+	push r8
+	push r9
+	push r10
+	push r11
+	push r12
+	push r13
+	push r14
+	push r15
+
+	mov ax, ds	; DS 세그먼트 셀렉터와 ES세그먼트 셀렉터는 스택에 직접
+	push rax		;삽입할 수 없으므로 RAX레지스터에 저장한 후 스택에 삽입
+	mov ax, es
+	push rax
+	push fs
+	push gs
+%endmacro	; 매크로 끝
+
+; 콘텍스트를 복원하는 매크로
+%macro KLOADCONTEXT 0		; 파라미터를 전달받지 않는 KLOADCONTEXT 매크로 정의
+; GS 세그먼트 셀렉터부터 RBP 레지스터까지 모두 스택에서 꺼내 복원
+	pop gs
+	pop fs
+	pop rax
+	mov es, ax		; DS 세그먼트 셀렉터와 ES세그먼트 셀렉터는 스택에 직접
+	pop rax			;삽입할 수 없으므로 RAX레지스터에 저장한 후 스택에 삽입
+	mov ds, ax
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rsi
+	pop rdi
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rax
+	pop rbp
+%endmacro		; 매크로 끝
+
+; Current Context에 현재 콘텍스트를 저장하고 Next Task에서 콘텍스트를 복구
+; PARAM : Current Context, Next Context
+kSwitchContext:
+	push rbp
+	mov rbp, rsp
+
+	pushfq		; save RFLAGS to not change by cmp
+	cmp rdi, 0
+	je .LoadContext
+	popfq		; load RFLAGS
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; 현재 태스크의 콘텍스트를 저장
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	push rax
+
+	; SS RSP RFLAGS CS RIP 레지스터 순서대로 삽입
+	mov ax, ss
+	mov qword[rdi + (23 * 8)], rax
+
+	mov rax, rbp		; save RSP except rbp, return address
+	add rax, 16
+	mov qword[rdi + (22 * 8)], rax
+
+	pushfq				; save RFLAGS
+	pop rax
+	mov qword[rdi + (21 * 8)], rax
+
+	mov ax, cs
+	mov qword[rdi + (20 * 8)], rax
+
+	mov rax, qword[rbp + 8]		; save return address to RIP register
+	mov qword[rdi + (19 * 8)], rax
+
+	pop rax
+	pop rbp
+
+	add rdi, (19 * 8)
+	mov rsp, rdi
+	sub rdi, (19 * 8)
+
+	KSAVECONTEXT
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 다음 태스크의 콘텍스트 복원
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.LoadContext:
+	mov rsp, rsi
+
+	; 콘텍스트 자료구조에서 레지스터를 복원
+	KLOADCONTEXT
+	iretq
