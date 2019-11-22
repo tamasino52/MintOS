@@ -5,7 +5,7 @@
 #include "Console.h"
 
 // 스케쥴러 관련 자료구조
-static SCHEDULER gs_vstScheduler;
+static SCHEDULER gs_stScheduler;
 static TCBPOOLMANAGER gs_stTCBPoolManager;
 
 
@@ -36,7 +36,7 @@ void kInitializeTCBPool(void)
 	TCB* pstEmptyTCB;
 	int i;
 
-	kLockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
+
 
 	if (gs_stTCBPoolManager.iUseCount == gs_stTCBPoolManager.iMaxCount)
 	{
@@ -61,7 +61,6 @@ void kInitializeTCBPool(void)
 		gs_stTCBPoolManager.iAllocatedCount = 1;
 	}
 
-	kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
 	return pstEmptyTCB;
 }
 
@@ -90,7 +89,7 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 	}
 
 	// allocate stack
-	pvStackAddress = (void*)(TASK_STACKPOOLADDRESS + (TASK_STACKSIZE * (pstTask->stLlink.qwID & 0xFFFFFFFF)));
+	pvStackAddress = (void*)(TASK_STACKPOOLADDRESS + (TASK_STACKSIZE * (pstTask->stLink.qwID & 0xFFFFFFFF)));
 
 	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
 	kAddTaskToReadyList(pstTask);
