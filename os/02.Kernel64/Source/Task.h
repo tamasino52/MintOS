@@ -151,5 +151,5 @@ void kSchedule(void);
 BOOL kScheduleInInterrupt(void);
 void kDecreaseProcessorTime(void);
 BOOL kIsProcessorTimeExpired(void);
-{
+
 #endif
