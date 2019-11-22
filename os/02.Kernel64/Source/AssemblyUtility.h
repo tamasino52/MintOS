@@ -25,9 +25,7 @@ void kLoadIDTR( QWORD qwIDTRAddress);
 void kEnableInterrupt( void );
 void kDisableInterrupt( void );
 QWORD kReadRFLAGS( void );
-QWORD kReadTSC( void );
-void kSwitchContext( CONTEXT* pstCurrentContext, CONTEXT* pstNextContext );
-void kHlt( void );
-BOOL kTestAndSet( volatile BYTE* pbDestination, BYTE bCompare, BYTE bSource );
-
+QWORD kReadTSC(void);
+void kSwitchContext(CONTEXT* pstCurrentContext, CONTEXT* pstNextContext);
+void kHlt(void);
 #endif /*__ASSEMBLYUTILITY_H__*/
