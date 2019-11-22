@@ -47,7 +47,8 @@ void kRand(const char* pcParameterBuffer)
 	// RTC 컨트롤러에서 시간 및 일자를 읽음
 	kReadRTCTime(&bHour, &bMinute, &bSecond);
 
-	static long holdrand = 1L + bSecond;
+	static long holdrand = 1L;
+	holdrand += bSecond;
 	int randvalue = (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 	kPrintf("Rand: %d\n",randvalue);
 }
