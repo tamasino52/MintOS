@@ -14,7 +14,6 @@
 #include "RTC.h"
 #include "AssemblyUtility.h"
 
-
 // 커맨드 테이블 정의
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -80,7 +79,7 @@ void kWaitUsingPIT(const char* pcParameterBuffer)
 	int i;
 	
 	// 파라미터 초기화
-	klnitializeParameter(&stList, pcParameterBuffer);
+	kInitializeParameter(&stList, pcParameterBuffer);
 	if (kGetNextParameter(&stList, vcParameter) == 0)
 	{
 		kPrintf("ex)wait 100(ms)\n");
@@ -91,17 +90,17 @@ void kWaitUsingPIT(const char* pcParameterBuffer)
 	kPrintf("%d ms Sleep Start ...\n", lMillisecond);
 	
 	// 인터럽트를 비활성화하고 PIT 컨트롤러를 통해 직접 시간을 측정
-	kDisablelnterrupt();
+	kDisableInterrupt();
 	for (i = 0; i < lMillisecond / 30; i++)
 	{
 		kWaitUsingDirectPIT(MSTOCOUNT(30) );
 	}
 	kWaitUsingDirectPIT(MSTOCOUNT(lMillisecond % 30));
-	kEnablelnterrupt();
+	kEnableInterrupt();
 	kPrintf("%d ms Sleep Complete\n", lMillisecond);
 
 	// 타이머 복원
-	klnitializePIT(MSTOCOUNT(1), TRUE);
+	kInitializePIT(MSTOCOUNT(1), TRUE);
 }
 
 // 타임 스탬프 카운터를 임음
@@ -118,7 +117,7 @@ void kMeasureProcessorSpeed(const char* pcParameterBuffer)
 	QWORD qwLastTSC, qwTotalTSC = 0;
 	kPrintf("Now Measuring ." );
 	// 10초 동안 변화한 타임 스탬프 카운터를 이용하여 프로세서의 속도를 간접적으로 측정
-	kDisablelnterrupt();
+	kDisableInterrupt();
 	for (i = 0; i < 200; i++) {
 		qwLastTSC = kReadTSC();
 		kWaitUsingDirectPIT(MSTOCOUNT(50));
@@ -126,8 +125,8 @@ void kMeasureProcessorSpeed(const char* pcParameterBuffer)
 		kPrintf(".");
 	}
 	// 타이머 복원
-	klnitializePIT(MSTOCOUNT(1), TRUE);
-	kEnablelnterrupt();
+	kInitializePIT(MSTOCOUNT(1), TRUE);
+	kEnableInterrupt();
 	kPrintf("\nCPU Speed = %d MHz\n", qwTotalTSC / 10 / 1000 / 1000);
 }
 
