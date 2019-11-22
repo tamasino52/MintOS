@@ -85,7 +85,7 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 	pstTask = kAllocateTCB();
 	if (pstTask == NULL)
 	{
-		return NULL
+		return NULL;
 	}
 
 	// allocate stack
@@ -152,7 +152,7 @@ void kInitializeScheduler(void)
 
 void kSetRunningTask(TCB* pstTask)
 {
-	gs_stScheduler.pstRunningTask = pstTAsk
+	gs_stScheduler.pstRunningTask = pstTask;
 }
 
 TCB* kGetRunningTask( void )
@@ -172,7 +172,7 @@ TCB* kGetNextTaskToRun(void)
 
 void kAddTaskToReadyList(TCB* pstTask)
 {
-	kAddListToTail(&(gs_stScheduler[bAPICID].stReadyList), pstTask);
+	kAddListToTail(&(gs_stScheduler.stReadyList), pstTask);
 }
 
 
@@ -206,7 +206,7 @@ void kSchedule(void)
 	// 다음 태스크를 현재 수행 중인 태스크로 설정한 후 콘텍스트 전환
 	gs_stScheduler.pstRunningTask = pstNextTask;
 	kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
-	kSetlnterruptFlag(bPreviousFlag)
+	kSetlnterruptFlag(bPreviousFlag);
 
 }
 
