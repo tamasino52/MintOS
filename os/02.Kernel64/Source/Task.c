@@ -84,62 +84,17 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 {
 	TCB* pstTask, * pstProcess;
 	void* pvStackAddress;
-	BYTE bCurrentAPICID;
 
-	bCurrentAPICID = kGetAPICID();
-
-	if ((pstTask = kAllocateTCB()) == NULL)
-		return NULL;
+	pstTask = kAllocateTCB();
+	if (pstTask == NULL)
+	{
+		return NULL
+	}
 
 	// allocate stack
-	if ((pvStackAddress = kAllocateMemory(TASK_STACKSIZE)) == NULL)
-	{
-		kFreeTCB(pstTask->stLink.qwID);
-		return NULL;
-	}
-
-	kLockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
-
-	pstProcess = kGetProcessByThread(kGetRunningTask(bCurrentAPICID));
-	if (pstProcess == NULL)
-	{
-		kFreeTCB(pstTask->stLink.qwID);
-		kFreeMemory(pvStackAddress);
-		kUnlockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
-		return NULL;
-	}
-
-	if (qwFlags & TASK_FLAGS_THREAD)
-	{
-		pstTask->qwParentProcessID = pstProcess->stLink.qwID;
-		pstTask->pvMemoryAddress = pstProcess->pvMemoryAddress;
-		pstTask->qwMemorySize = pstProcess->qwMemorySize;
-
-		// not TCB link but thread link
-		kAddListToTail(&(pstProcess->stChildThreadList), &(pstTask->stThreadLink));
-	}
-	else
-	{
-		pstTask->qwParentProcessID = pstProcess->stLink.qwID;
-		pstTask->pvMemoryAddress = pvMemoryAddress;
-		pstTask->qwMemorySize = qwMemorySize;
-	}
-
-	pstTask->stThreadLink.qwID = pstTask->stLink.qwID;
-
-	kUnlockForSpinLock(&(gs_vstScheduler[bCurrentAPICID].stSpinLock));
-
-	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress,
-		TASK_STACKSIZE);
-
-	kInitializeList(&(pstTask->stChildThreadList));
-
-	pstTask->bFPUUsed = FALSE;
-
-	pstTask->bAPICID = bCurrentAPICID;
-	pstTask->bAffinity = bAffinity;
-
-	kAddTaskToSchedulerWithLoadBalancing(pstTask);
+	pvStackAddress = (void*)(TASK_STACKPOOLADDRESS + (TASK_STACKSIZE * (pstTask->stLlink.qwID & 0xFFFFFFFF)));
+	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
+	kAddTaskToReadyList(pstTask);
 
 	return pstTask;
 }
