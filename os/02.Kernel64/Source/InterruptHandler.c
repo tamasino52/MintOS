@@ -106,8 +106,7 @@ void kTimerHandler(int iVectorNumber)
 	kPrintStringXY(70, 0, vcBuffer);
 	//=====================================================================
 
-	iIRQ = iVectorNumber - PIC_IRQSTARTVECTOR;
-	kSendEOIToPIC(iIRQ)
+	kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
 	g_qwTickCount++;
 
 	kDecreaseProcessorTime();
