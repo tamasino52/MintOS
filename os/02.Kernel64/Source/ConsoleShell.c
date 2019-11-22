@@ -47,7 +47,7 @@ void kSetTimer(const char* pcParameterBuffer)
 	char vcParameter[100];
 	PARAMETERLIST stList;
 	long lValue;
-	bool bPeriodic;
+	BOOL bPeriodic;
 
 	//파라미터 초기화
 	kInitializeParameter(&stList, pcParameterBuffer);
