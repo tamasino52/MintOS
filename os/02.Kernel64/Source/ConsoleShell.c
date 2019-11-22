@@ -142,6 +142,47 @@ void kTestTask2(void)
 	}
 }
 
+void kCreateTestTask(const char* pcParameterBuffer)
+{
+	PARAMETERLIST stList;
+	char vcType[30];
+	char vcCount[30];
+	int i;
+
+	//파라미터 추출
+	kInitializeParameter(&stList, pcParameterBuffer);
+	kGetNextParameter(&stList, vcType);
+	kGetNextParameter(&stList, vcCount);
+
+	switch (kAToI(vcType, 10))
+	{
+		// 태스크 1 생성
+	case 1:
+		for (i = 0; i < kAToI(vcCount, 10); i++)
+		{
+			if (kCreateTask(0, (QWORD)kTestTask1) == NULL)
+			{
+				break;
+			}
+		}
+		kPrintf("Task1 %d Created\n", i);
+		break;
+		// 태스크 2 생성
+	case 2:
+		for (i = 0; i < kAToI(vcCount, 10); i++)
+		{
+			if (kCreateTask(0, (QWORD)kTestTask2) == NULL)
+			{
+				break;
+			}
+		}
+		kPrintf("Task2 %d Created\n", i);
+		break;
+
+
+	}
+}
+
 
 
 void kRand(const char* pcParameterBuffer)
