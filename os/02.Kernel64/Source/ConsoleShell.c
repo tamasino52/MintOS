@@ -142,64 +142,6 @@ void kTestTask2(void)
 	}
 }
 
-void kCreateTestTask(const char* pcParameterBuffer)
-{
-	PARAMETERLIST stList;
-	char vcType[30];
-	char vcCount[30];
-	int i;
-
-	//파라미터 추출
-	kInitializeParameter(&stList, pcParameterBuffer);
-	kGetNextParameter(&stList, vcType);
-	kGetNextParameter(&stList, vcCount);
-
-	switch (kAToI(vcType, 10))
-	{
-		// 태스크 1 생성
-	case 1:
-		for (i = 0; i < kAToI(vcCount, 10); i++)
-		{
-			if (kCreateTask(0, (QWORD)kTestTask1) == NULL)
-			{
-				break;
-			}
-		}
-		kPrintf("Task1 %d Created\n", i);
-		break;
-		// 태스크 2 생성
-	case 2:
-		for (i = 0; i < kAToI(vcCount, 10); i++)
-		{
-			if (kCreateTask(0, (QWORD)kTestTask2) == NULL)
-			{
-				break;
-			}
-		}
-		kPrintf("Task2 %d Created\n", i);
-		break;
-
-
-	}
-
-
-	//태스크 설정
-	kSetUpTask( &( gs_vstTask[1] ), 1, 0, (QWORD) kTestTask, &( gs_vstStack ), sizeof(gs_vstStack) );
-
-	//'q' 키가 입력되지 않을 떄까지 수행
-	while(1)
-	{
-		// 메시지 출력 후 키입력 대기
-		kPrintf("[%d] This message is from kConsoleShell . Press any key to switch TestTask\n", i++);
-		if (kGetCh() == 'q')
-		{
-			break;
-		}
-		// 위에서 키가 입력되면 태스크를 전환
-		kSwitchContext(&(gs_vstTask[0].stContext), &(gs_vstTask[1].stContext));
-	}
-}
-
 
 
 void kRand(const char* pcParameterBuffer)
