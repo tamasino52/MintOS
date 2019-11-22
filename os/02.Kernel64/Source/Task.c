@@ -165,7 +165,7 @@ TCB* kGetNextTaskToRun(void)
 {
 	if (kGetListCount(&(gs_stScheduler.stReadyList)) == 0)
 	{
-		return NULL
+		return NULL;
 	}
 	return (TCB*)kRemoveListFromHeader(&(gs_stScheduler.stReadyList));
 }
