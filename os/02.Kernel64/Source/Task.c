@@ -29,7 +29,6 @@ void kInitializeTCBPool(void)
 
 	gs_stTCBPoolManager.iMaxCount = TASK_MAXCOUNT;
 	gs_stTCBPoolManager.iAllocatedCount = 1;
-	kInitializeSpinLock(&gs_stTCBPoolManager.stSpinLock);
 }
 
  TCB* kAllocateTCB(void)
@@ -41,7 +40,6 @@ void kInitializeTCBPool(void)
 
 	if (gs_stTCBPoolManager.iUseCount == gs_stTCBPoolManager.iMaxCount)
 	{
-		kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
 		return NULL;
 	}
 
@@ -73,11 +71,11 @@ void kInitializeTCBPool(void)
 	int i;
 
 	i = GETTCBOFFSET(qwID);
+
 	kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i].stContext), 0, sizeof(CONTEXT));
-	kLockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
 	gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID = i;
+	
 	gs_stTCBPoolManager.iUseCount--;
-	kUnlockForSpinLock(&gs_stTCBPoolManager.stSpinLock);
 }
 
 TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
@@ -93,6 +91,7 @@ TCB* kCreateTask(QWORD qwFlags, QWORD qwEntryPointAddress)
 
 	// allocate stack
 	pvStackAddress = (void*)(TASK_STACKPOOLADDRESS + (TASK_STACKSIZE * (pstTask->stLlink.qwID & 0xFFFFFFFF)));
+
 	kSetupTask(pstTask, qwFlags, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
 	kAddTaskToReadyList(pstTask);
 
