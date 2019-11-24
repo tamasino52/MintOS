@@ -488,8 +488,8 @@ void kSchedule( void )
 		    kUnlockForSystemData(bPreviousFlag);
 		    break;
 	    }
-	    tmp+=pstNextTask->ticket;
-	    if(tmp>=winner)
+		tmp += 100000 * (pstNextTask->ticket) / gs_stScheduler.totaltask;
+		if(tmp>=winner)
 	    {
 		    pstNextTask->usecount++;
 		    break;
