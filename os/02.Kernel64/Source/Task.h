@@ -118,6 +118,9 @@ typedef struct kTaskControlBlockStruct
     void* pvMemoryAddress;
     QWORD qwMemorySize;
 
+    int stride;
+    int usecount;
+    int realcount;
     //==========================================================================
     // 이하 스레드 정보
     //==========================================================================
@@ -160,19 +163,21 @@ typedef struct kSchedulerStruct
     int iProcessorTime;
     
     // 실행할 태스크가 준비중인 리스트, 태스크의 우선 순위에 따라 구분
-    LIST vstReadyList[ TASK_MAXREADYLISTCOUNT ];
+    LIST vstReadyList;
 
     // 종료할 태스크가 대기중인 리스트
     LIST stWaitList;
     
     // 각 우선 순위별로 태스크를 실행한 횟수를 저장하는 자료구조
-    int viExecuteCount[ TASK_MAXREADYLISTCOUNT ];
     
     // 프로세서 부하를 계산하기 위한 자료구조
     QWORD qwProcessorLoad;
     
     // 유휴 태스크(Idle Task)에서 사용한 프로세서 시간
     QWORD qwSpendProcessorTimeInIdleTask;
+    
+    int totalcount;
+
 } SCHEDULER;
 
 #pragma pack( pop )
