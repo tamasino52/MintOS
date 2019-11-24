@@ -1,4 +1,4 @@
-/**
+/*
  *  file    ImageMaker.c
  *  date    2008/12/16
  *  author  kkamagui 
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
     // 32비트 커널 파일을 열어서 모든 내용을 디스크 이미지 파일로 복사
     //--------------------------------------------------------------------------
     printf( "[INFO] Copy protected mode kernel to image file\n" );
-    if( ( iSourceFd = open( argv[ 2 ], O_RDONLY ) ) == -1 )
+    if( ( iSourceFd = open( argv[ 2 ], O_RDONLY  ) ) == -1 )
     {
         fprintf( stderr, "[ERROR] %s open fail\n", argv[ 2 ] );
         exit( -1 );

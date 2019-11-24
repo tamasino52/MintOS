@@ -7,7 +7,7 @@
  */
 
 #include "RTC.h"
-
+#include "InterruptHandler.h"
 /**
  *  CMOS 메모리에서 RTC 컨트롤러가 저장한 현재 시간을 읽음
  */
@@ -31,6 +31,7 @@ void kReadRTCTime( BYTE* pbHour, BYTE* pbMinute, BYTE* pbSecond )
     kOutPortByte( RTC_CMOSADDRESS, RTC_ADDRESS_SECOND );
     // CMOS 데이터 레지스터(포트 0x71)에서 초를 읽음
     bData = kInPortByte( RTC_CMOSDATA );
+    
     *pbSecond = RTC_BCDTOBINARY( bData );
 }
 

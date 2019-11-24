@@ -89,8 +89,7 @@
 // 계산하여 반환하는 매크로
 #define GETTCBFROMTHREADLINK( x )   ( TCB* ) ( ( QWORD ) ( x ) - offsetof( TCB, \
                                       stThreadLink ) )
-
-
+///rand  
 ////////////////////////////////////////////////////////////////////////////////
 //
 // 구조체
@@ -98,6 +97,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // 1바이트로 정렬
 #pragma pack( push, 1 )
+
 
 // 콘텍스트에 관련된 자료구조
 typedef struct kContextStruct
@@ -117,10 +117,9 @@ typedef struct kTaskControlBlockStruct
     // 프로세스 메모리 영역의 시작과 크기
     void* pvMemoryAddress;
     QWORD qwMemorySize;
+int ticket;
+int usecount;
 
-    int stride;
-    int usecount;
-    int realcount;
     //==========================================================================
     // 이하 스레드 정보
     //==========================================================================
@@ -169,14 +168,13 @@ typedef struct kSchedulerStruct
     LIST stWaitList;
     
     // 각 우선 순위별로 태스크를 실행한 횟수를 저장하는 자료구조
-    
     // 프로세서 부하를 계산하기 위한 자료구조
     QWORD qwProcessorLoad;
     
     // 유휴 태스크(Idle Task)에서 사용한 프로세서 시간
     QWORD qwSpendProcessorTimeInIdleTask;
-    
-    int totalcount;
+    int totalticket;
+    int totaltask;
 
 } SCHEDULER;
 

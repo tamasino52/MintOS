@@ -14,10 +14,11 @@
 #include "ConsoleShell.h"
 #include "Task.h"
 #include "PIT.h"
-
+#include "InterruptHandler.h"
 /**
  *  아래 함수는 C 언어 커널의 시작 부분임
  */
+extern int rand;
 void Main( void )
 {
     int iCursorX, iCursorY;
@@ -79,10 +80,10 @@ void Main( void )
     kMaskPICInterrupt( 0 );
     kEnableInterrupt();
     kSetCursor( 45, iCursorY++ );
-    kPrintf( "Pass\n" );
-
+  
+    kPrintf( "Pa%dss\n",rand );
     // 유휴 태스크를 시스템 스레드로 생성하고 셸을 시작
-  /*  kCreateTask( TASK_FLAGS_LOWEST | TASK_FLAGS_THREAD | TASK_FLAGS_SYSTEM | TASK_FLAGS_IDLE, 0, 0, 
-            ( QWORD ) kIdleTask );*/
+    kCreateTask( TASK_FLAGS_LOWEST | TASK_FLAGS_THREAD | TASK_FLAGS_SYSTEM | TASK_FLAGS_IDLE, 0, 0, 
+            ( QWORD ) kIdleTask );
     kStartConsoleShell();
 }
