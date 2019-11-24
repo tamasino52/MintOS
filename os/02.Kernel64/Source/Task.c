@@ -148,7 +148,7 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
         pstTask->qwMemorySize = qwMemorySize;
     }
     bPriority=GETPRIORITY(qwFlags);
-    pstTask->ticket =2000*bPriority;
+    pstTask->ticket =bPriority;
     pstTask->usecount=0;
     // 스레드의 ID를 태스크 ID와 동일하게 설정
     pstTask->stThreadLink.qwID = pstTask->stLink.qwID;    
@@ -253,9 +253,9 @@ void kInitializeScheduler( void )
     // 프로세서 사용률을 계산하는데 사용하는 자료구조 초기화
     gs_stScheduler.qwSpendProcessorTimeInIdleTask = 0;
     gs_stScheduler.qwProcessorLoad = 0;
-    gs_stScheduler.totalticket=2000;
+    gs_stScheduler.totalticket=1;
     gs_stScheduler.totaltask=1;
-    pstTask->ticket=2000;
+    pstTask->ticket=1;
 }
 
 /**
@@ -488,7 +488,7 @@ void kSchedule( void )
 		    kUnlockForSystemData(bPreviousFlag);
 		    break;
 	    }
-		tmp += 100000 * (pstNextTask->ticket) / gs_stScheduler.totaltask;
+		tmp += 100000 * (pstNextTask->ticket) / gs_stScheduler.totalticket;
 		if(tmp>=winner)
 	    {
 		    pstNextTask->usecount++;
