@@ -5,15 +5,14 @@
  *          Copyright(c)2008 All rights reserved by kkamagui
  *  brief   태스크를 처리하는 함수에 관련된 파일
  */
+
 #include "Task.h"
 #include "Descriptor.h"
-#include "InterruptHandler.h"
-#include "Utility.h"
-#include "RTC.h"
+
 // 스케줄러 관련 자료구조
 static SCHEDULER gs_stScheduler;
 static TCBPOOLMANAGER gs_stTCBPoolManager;
-extern int rand;
+
 //==============================================================================
 //  태스크 풀과 태스크 관련
 //==============================================================================
@@ -104,9 +103,7 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
     TCB* pstTask, * pstProcess;
     void* pvStackAddress;
     BOOL bPreviousFlag;
-    
     BYTE bPriority;
-
 
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();    
@@ -148,8 +145,10 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
         pstTask->qwMemorySize = qwMemorySize;
     }
     bPriority=GETPRIORITY(qwFlags);
-    pstTask->ticket =bPriority;
+
+    pstTask->stride=120/((bPriority+1));
     pstTask->usecount=0;
+    pstTask->realcount=0;
     // 스레드의 ID를 태스크 ID와 동일하게 설정
     pstTask->stThreadLink.qwID = pstTask->stLink.qwID;    
     // 임계 영역 끝
@@ -234,8 +233,8 @@ void kInitializeScheduler( void )
 
     // 준비 리스트와 우선 순위별 실행 횟수를 초기화하고 대기 리스트도 초기화
     
-        kInitializeList( &( gs_stScheduler.vstReadyList ) );
-       
+        kInitializeList( &( gs_stScheduler.vstReadyList) );
+        
     kInitializeList( &( gs_stScheduler.stWaitList ) );
     
     // TCB를 할당 받아 부팅을 수행한 태스크를 커널 최초의 프로세스로 설정
@@ -247,15 +246,17 @@ void kInitializeScheduler( void )
     pstTask->qwMemorySize = 0x500000;
     pstTask->pvStackAddress = ( void* ) 0x600000;
     pstTask->qwStackSize = 0x100000;
-   BYTE bPriority; 
-    bPriority = GETPRIORITY( pstTask->qwFlags );
-
+    BYTE bPriority;
+    bPriority=GETPRIORITY(pstTask->qwFlags);
+    pstTask->stride=10;
+    pstTask->usecount=10;
+   // kAddListToHeader(&(gs_stScheduler.vstReadyList),pstTask);
     // 프로세서 사용률을 계산하는데 사용하는 자료구조 초기화
     gs_stScheduler.qwSpendProcessorTimeInIdleTask = 0;
     gs_stScheduler.qwProcessorLoad = 0;
-    gs_stScheduler.totalticket=1;
-    gs_stScheduler.totaltask=1;
-    pstTask->ticket=1;
+    gs_stScheduler.totalcount=1;
+
+
 }
 
 /**
@@ -299,45 +300,33 @@ TCB* kGetRunningTask( void )
 static TCB* kGetNextTaskToRun( void )
 {
     TCB* pstTarget = NULL;
+    TCB* target=NULL;
     int iTaskCount, i, j;
-    int psttotalticket;
+    int tmp;
+    QWORD search;
     // 큐에 태스크가 있으나 모든 큐의 태스크가 1회씩 실행된 경우, 모든 큐가 프로세서를
     // 양보하여 태스크를 선택하지 못할 수 있으니 NULL일 경우 한번 더 수행
-    for( j = 0 ; j < 2 ; j++ )
-    {
-        // 높은 우선 순위에서 낮은 우선 순위까지 리스트를 확인하여 스케줄링할 태스크를 선택
-    /*    for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
-        {
-            iTaskCount = kGetListCount( &( gs_stScheduler.vstReadyList[ i ] ) );
-            
-            // 만약 실행한 횟수보다 리스트의 태스크 수가 더 많으면 현재 우선 순위의
-            // 태스크를 실행함
-            if( gs_stScheduler.viExecuteCount[ i ] < iTaskCount )
-            {
-                pstTarget = ( TCB* ) kRemoveListFromHeader( 
-                                        &( gs_stScheduler.vstReadyList[ i ] ) );
-                gs_stScheduler.viExecuteCount[ i ]++;
-                break;            
-            }
-            // 만약 실행한 횟수가 더 많으면 실행 횟수를 초기화하고 다음 우선 순위로 양보함
-            else
-            {
-                gs_stScheduler.viExecuteCount[ i ] = 0;
-            }
-        }*/
-        
-        // 만약 수행할 태스크를 찾았으면 종료
-    	 psttotalticket=gs_stScheduler.totalticket;
-	 pstTarget=(TCB*) kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
 
-    	if( pstTarget != NULL )
-        {
-            gs_stScheduler.totalticket=psttotalticket-(pstTarget->ticket);
-	    gs_stScheduler.totaltask--;
-		break;
-        }
-    }    
-    return pstTarget;
+	iTaskCount=kGetListCount(&(gs_stScheduler.vstReadyList));
+    	pstTarget=(TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
+	kAddListToTail(&(gs_stScheduler.vstReadyList),pstTarget);
+	tmp=pstTarget->usecount;
+	while(1){
+		
+		if(pstTarget==NULL)
+		{
+			break;}
+		if(tmp>pstTarget->usecount)
+		{
+			tmp=pstTarget->usecount;
+			search=pstTarget->stLink.qwID;
+		}
+		pstTarget=kGetNextFromList(&(gs_stScheduler.vstReadyList),pstTarget);	
+	}
+
+	pstTarget=(TCB*)kRemoveList(&(gs_stScheduler.vstReadyList),search);
+	
+	return pstTarget;
 }
 
 /**
@@ -346,18 +335,20 @@ static TCB* kGetNextTaskToRun( void )
 static BOOL kAddTaskToReadyList( TCB* pstTask )
 {
     BYTE bPriority;
-    int psttotalticket;
-    psttotalticket=gs_stScheduler.totalticket;
-
+    
     bPriority = GETPRIORITY( pstTask->qwFlags );
-     if( bPriority >= TASK_MAXREADYLISTCOUNT )
+    if( bPriority == TASK_FLAGS_WAIT )
+    {
+        kAddListToTail( &( gs_stScheduler.stWaitList ), pstTask );
+        return TRUE;
+    }
+    else if( bPriority >= TASK_MAXREADYLISTCOUNT )
     {
         return FALSE;
     }
     
     kAddListToTail( &( gs_stScheduler.vstReadyList ), pstTask );
-    gs_stScheduler.totalticket= psttotalticket+(pstTask->ticket);
-    gs_stScheduler.totaltask++;
+
     return TRUE;
 }
 
@@ -368,7 +359,7 @@ static TCB* kRemoveTaskFromReadyList( QWORD qwTaskID )
 {
     TCB* pstTarget;
     BYTE bPriority;
-   int psttotalticket; 
+    
     // 태스크 ID가 유효하지 않으면 실패
     if( GETTCBOFFSET( qwTaskID ) >= TASK_MAXCOUNT )
     {
@@ -384,13 +375,13 @@ static TCB* kRemoveTaskFromReadyList( QWORD qwTaskID )
     
     // 태스크가 존재하는 준비 리스트에서 태스크 제거
     bPriority = GETPRIORITY( pstTarget->qwFlags );
-    psttotalticket= gs_stScheduler.totalticket;
+    if( bPriority >= TASK_MAXREADYLISTCOUNT )
+    {
+        return NULL;
+    }    
 
     pstTarget = kRemoveList( &( gs_stScheduler.vstReadyList), 
                      qwTaskID );
-    gs_stScheduler.totalticket=psttotalticket-(pstTarget->ticket);
-    gs_stScheduler.totaltask--;
-
     return pstTarget;
 }
 
@@ -406,12 +397,10 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     {
         return FALSE;
     }
-    int totalticket;
+    
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
-    pstTarget= gs_stScheduler.pstRunningTask;
-    totalticket=gs_stScheduler.totalticket-(pstTarget->ticket);
-
+    
     // 현재 실행중인 태스크이면 우선 순위만 변경
     // PIT 컨트롤러의 인터럽트(IRQ 0)가 발생하여 태스크 전환이 수행될 때 변경된 
     // 우선 순위의 리스트로 이동
@@ -419,7 +408,8 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     if( pstTarget->stLink.qwID == qwTaskID )
     {
         SETPRIORITY( pstTarget->qwFlags, bPriority );
-	pstTarget->ticket=bPriority*1000;
+	pstTarget->stride=120*(1/bPriority);
+
     }
     // 실행중인 태스크가 아니면 준비 리스트에서 찾아서 해당 우선 순위의 리스트로 이동
     else
@@ -434,19 +424,17 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
             {
                 // 우선 순위를 설정
                 SETPRIORITY( pstTarget->qwFlags, bPriority );
-		pstTarget->ticket=bPriority*1000;
+	pstTarget->stride=120*(1/bPriority);
             }
         }
         else
         {
             // 우선 순위를 설정하고 준비 리스트에 다시 삽입
             SETPRIORITY( pstTarget->qwFlags, bPriority );
-		pstTarget->ticket=bPriority*1000;
+	pstTarget->stride=120*(1/bPriority);
             kAddTaskToReadyList( pstTarget );
         }
     }
-    gs_stScheduler.totalticket=totalticket+(pstTarget->ticket);
-
     // 임계 영역 끝
     kUnlockForSystemData( bPreviousFlag );
     return TRUE;    
@@ -460,11 +448,9 @@ void kSchedule( void )
 {
     TCB* pstRunningTask, * pstNextTask;
     BOOL bPreviousFlag;
-  	  
-
-    int winner,tmp;
+    
     // 전환할 태스크가 있어야 함
-    if( kGetReadyTaskCount() < 1 ||gs_stScheduler.totaltask==0 )
+    if( kGetReadyTaskCount() < 1 )
     {
         return ;
     }
@@ -473,30 +459,15 @@ void kSchedule( void )
     // 동안 인터럽트가 발생하지 못하도록 설정
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
-   
+   int stride,count,totalcount;
+count=0;
+ 
+	pstNextTask=kGetNextTaskToRun();
+	pstNextTask->usecount+=pstNextTask->stride;
+	pstNextTask->realcount++;
 
-   winner=(rand%100000)+1;
-    tmp=0;
     // 실행할 다음 태스크를 얻음
-   // pstNextTask = kGetNextTaskToRun();
-
-    while(1)
-    {
-	    pstNextTask=kGetNextTaskToRun();
-	    if(pstNextTask==NULL)
-	    {
-		    kUnlockForSystemData(bPreviousFlag);
-		    break;
-	    }
-		tmp += 100000 * (pstNextTask->ticket) / gs_stScheduler.totalticket;
-		if(tmp>=winner)
-	    {
-		    pstNextTask->usecount++;
-		    break;
-	    }
-	    kAddTaskToReadyList(pstNextTask);
-
-    }
+//    pstNextTask = kGetNextTaskToRun();
     if( pstNextTask == NULL )
     {
         // 임계 영역 끝
@@ -505,7 +476,6 @@ void kSchedule( void )
     }
     
     // 현재 수행중인 태스크의 정보를 수정한 뒤 콘텍스트 전환
-    pstRunningTask = gs_stScheduler.pstRunningTask; 
     gs_stScheduler.pstRunningTask = pstNextTask;
     
     // 유휴 태스크에서 전환되었다면 사용한 프로세서 시간을 증가시킴
@@ -544,36 +514,16 @@ BOOL kScheduleInInterrupt( void )
     TCB* pstRunningTask, * pstNextTask;
     char* pcContextAddress;
     BOOL bPreviousFlag;
-    int winner;
-    int tmp;
+    
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
-    
-    winner=gs_stScheduler.totalticket/((rand)%(gs_stScheduler.totaltask)+1);
-
-    tmp=0;
-    // 실행할 다음 태스크를 얻음
-   // pstNextTask = kGetNextTaskToRun();
-
-    while(1)
-    {
-	    pstNextTask=kGetNextTaskToRun();
-	    if(pstNextTask==NULL)
-	    {
-		    kUnlockForSystemData(bPreviousFlag);
-		    break;
-	    }
-	    tmp+=pstNextTask->ticket;
-	    if(tmp>=winner)
-	    {
-		    pstNextTask->usecount++;
-		    break;
-	    }
-	    kAddTaskToReadyList(pstNextTask);
-
-    }
+    int count=0;
+	
+    pstNextTask=kGetNextTaskToRun();
+	pstNextTask->usecount+=pstNextTask->stride;
+	pstNextTask->realcount++;
     // 전환할 태스크가 없으면 종료
-  //  pstNextTask = kGetNextTaskToRun();
+   // pstNextTask = kGetNextTaskToRun();
     if( pstNextTask == NULL )
     {
         // 임계 영역 끝
@@ -721,9 +671,10 @@ int kGetReadyTaskCount( void )
     bPreviousFlag = kLockForSystemData();
 
     // 모든 준비 큐를 확인하여 태스크 개수를 구함
-   
+    for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
+    {
         iTotalCount += kGetListCount( &( gs_stScheduler.vstReadyList ) );
-    
+    }
     
     // 임계 영역 끝
     kUnlockForSystemData( bPreviousFlag );

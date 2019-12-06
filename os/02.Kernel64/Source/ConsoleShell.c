@@ -39,7 +39,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "testmutex", "Test Mutex Function", kTestMutex },
         { "testthread", "Test Thread And Process Function", kTestThread },
         { "showmatrix", "Show Matrix Screen", kShowMatrix },
-	{"test","test os",test},
+	{"test","test os",ktest},
 };                                     
 
 //==============================================================================
@@ -581,27 +581,23 @@ static void kCreateTestTask( const char* pcParameterBuffer )
         break;
     }    
 }   
-static void test (const char* pcParameterBuffer)
+
+static void ktest(const char* pcParameterBuffer)
 {
 	for(int i=0;i<1;i++)
 	{
-		if(kCreateTask(TASK_FLAGS_LOW| TASK_FLAGS_PROCESS,0,0,(QWORD) kTestTask2)==NULL)
+		if(kCreateTask(TASK_FLAGS_LOW|TASK_FLAGS_PROCESS,0,0,(QWORD) kTestTask2)==NULL)
 			break;
 	}
 	for(int i=0;i<1;i++)
 	{
-		
-		if(kCreateTask(TASK_FLAGS_MEDIUM| TASK_FLAGS_PROCESS,0,0,(QWORD) kTestTask2)==NULL)
- 		break;
+		if(kCreateTask(TASK_FLAGS_MEDIUM|TASK_FLAGS_PROCESS,0,0,(QWORD) kTestTask2)==NULL)
+			break;
 	}
-/*	for(int i=0;i<3;i++)
-	{
-		
-		if(kCreateTask(TASK_FLAGS_HIGH| TASK_FLAGS_PROCESS,0,0,(QWORD) kTestTask2)==NULL)
- 		break;
-	}*/
-}
 
+
+
+}
 /**
  *  태스크의 우선 순위를 변경
  */
@@ -669,14 +665,12 @@ static void kShowTaskList( const char* pcParameterBuffer )
                 kPrintf( "\n" );
             }
             
-            kPrintf( "[%d] Task ID[0x%Q], Priority[%d], Flags[0x%Q], Thread[%d] , Ticket[%d],Count[%d]\n", 1 + iCount++,
+            kPrintf( "[%d] Task ID[0x%Q], Priority[%d], Flags[0x%Q], Thread[%d] stride[%d] count[%d] usecount[%d]\n", 1 + iCount++,
                      pstTCB->stLink.qwID, GETPRIORITY( pstTCB->qwFlags ), 
-                     pstTCB->qwFlags, kGetListCount( &( pstTCB->stChildThreadList ) ), pstTCB->ticket,pstTCB->usecount );
+                     pstTCB->qwFlags, kGetListCount( &( pstTCB->stChildThreadList ) ),pstTCB->stride ,  pstTCB->usecount,pstTCB->realcount);
             kPrintf( "    Parent PID[0x%Q], Memory Address[0x%Q], Size[0x%Q]\n",
                     pstTCB->qwParentProcessID, pstTCB->pvMemoryAddress, pstTCB->qwMemorySize );
-        
-	}
-	
+        }
     }
 }
 
