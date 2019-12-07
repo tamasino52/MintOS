@@ -103,8 +103,7 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
     TCB* pstTask, * pstProcess;
     void* pvStackAddress;
     BOOL bPreviousFlag;
-    BYTE bPriority;
-
+    
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();    
     pstTask = kAllocateTCB();
@@ -144,11 +143,7 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
         pstTask->pvMemoryAddress = pvMemoryAddress;
         pstTask->qwMemorySize = qwMemorySize;
     }
-    bPriority=GETPRIORITY(qwFlags);
-
-    pstTask->stride=120/((bPriority+1));
-    pstTask->usecount=0;
-    pstTask->realcount=0;
+    
     // 스레드의 ID를 태스크 ID와 동일하게 설정
     pstTask->stThreadLink.qwID = pstTask->stLink.qwID;    
     // 임계 영역 끝
@@ -164,6 +159,9 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
 
     // 자식 스레드 리스트를 초기화
     kInitializeList( &( pstTask->stChildThreadList ) );
+    
+    // FPU 사용 여부를 사용하지 않은 것으로 초기화
+    pstTask->bFPUUsed = FALSE;
 
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
@@ -232,9 +230,11 @@ void kInitializeScheduler( void )
     kInitializeTCBPool();
 
     // 준비 리스트와 우선 순위별 실행 횟수를 초기화하고 대기 리스트도 초기화
-    
-        kInitializeList( &( gs_stScheduler.vstReadyList) );
-        
+    for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
+    {
+        kInitializeList( &( gs_stScheduler.vstReadyList[ i ] ) );
+        gs_stScheduler.viExecuteCount[ i ] = 0;
+    }    
     kInitializeList( &( gs_stScheduler.stWaitList ) );
     
     // TCB를 할당 받아 부팅을 수행한 태스크를 커널 최초의 프로세스로 설정
@@ -246,17 +246,13 @@ void kInitializeScheduler( void )
     pstTask->qwMemorySize = 0x500000;
     pstTask->pvStackAddress = ( void* ) 0x600000;
     pstTask->qwStackSize = 0x100000;
-    BYTE bPriority;
-    bPriority=GETPRIORITY(pstTask->qwFlags);
-    pstTask->stride=10;
-    pstTask->usecount=10;
-   // kAddListToHeader(&(gs_stScheduler.vstReadyList),pstTask);
+    
     // 프로세서 사용률을 계산하는데 사용하는 자료구조 초기화
     gs_stScheduler.qwSpendProcessorTimeInIdleTask = 0;
     gs_stScheduler.qwProcessorLoad = 0;
-    gs_stScheduler.totalcount=1;
-
-
+    
+    // FPU를 사용한 태스크 ID를 유효하지 않은 값으로 초기화
+    gs_stScheduler.qwLastFPUUsedTaskID = TASK_INVALIDID;
 }
 
 /**
@@ -300,33 +296,40 @@ TCB* kGetRunningTask( void )
 static TCB* kGetNextTaskToRun( void )
 {
     TCB* pstTarget = NULL;
-    TCB* target=NULL;
     int iTaskCount, i, j;
-    int tmp;
-    QWORD search;
+    
     // 큐에 태스크가 있으나 모든 큐의 태스크가 1회씩 실행된 경우, 모든 큐가 프로세서를
     // 양보하여 태스크를 선택하지 못할 수 있으니 NULL일 경우 한번 더 수행
-
-	iTaskCount=kGetListCount(&(gs_stScheduler.vstReadyList));
-    	pstTarget=(TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
-	kAddListToTail(&(gs_stScheduler.vstReadyList),pstTarget);
-	tmp=pstTarget->usecount;
-	while(1){
-		
-		if(pstTarget==NULL)
-		{
-			break;}
-		if(tmp>pstTarget->usecount)
-		{
-			tmp=pstTarget->usecount;
-			search=pstTarget->stLink.qwID;
-		}
-		pstTarget=kGetNextFromList(&(gs_stScheduler.vstReadyList),pstTarget);	
-	}
-
-	pstTarget=(TCB*)kRemoveList(&(gs_stScheduler.vstReadyList),search);
-	
-	return pstTarget;
+    for( j = 0 ; j < 2 ; j++ )
+    {
+        // 높은 우선 순위에서 낮은 우선 순위까지 리스트를 확인하여 스케줄링할 태스크를 선택
+        for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
+        {
+            iTaskCount = kGetListCount( &( gs_stScheduler.vstReadyList[ i ] ) );
+            
+            // 만약 실행한 횟수보다 리스트의 태스크 수가 더 많으면 현재 우선 순위의
+            // 태스크를 실행함
+            if( gs_stScheduler.viExecuteCount[ i ] < iTaskCount )
+            {
+                pstTarget = ( TCB* ) kRemoveListFromHeader( 
+                                        &( gs_stScheduler.vstReadyList[ i ] ) );
+                gs_stScheduler.viExecuteCount[ i ]++;
+                break;            
+            }
+            // 만약 실행한 횟수가 더 많으면 실행 횟수를 초기화하고 다음 우선 순위로 양보함
+            else
+            {
+                gs_stScheduler.viExecuteCount[ i ] = 0;
+            }
+        }
+        
+        // 만약 수행할 태스크를 찾았으면 종료
+        if( pstTarget != NULL )
+        {
+            break;
+        }
+    }    
+    return pstTarget;
 }
 
 /**
@@ -347,8 +350,7 @@ static BOOL kAddTaskToReadyList( TCB* pstTask )
         return FALSE;
     }
     
-    kAddListToTail( &( gs_stScheduler.vstReadyList ), pstTask );
-
+    kAddListToTail( &( gs_stScheduler.vstReadyList[ bPriority ] ), pstTask );
     return TRUE;
 }
 
@@ -380,7 +382,7 @@ static TCB* kRemoveTaskFromReadyList( QWORD qwTaskID )
         return NULL;
     }    
 
-    pstTarget = kRemoveList( &( gs_stScheduler.vstReadyList), 
+    pstTarget = kRemoveList( &( gs_stScheduler.vstReadyList[ bPriority ]), 
                      qwTaskID );
     return pstTarget;
 }
@@ -408,8 +410,6 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     if( pstTarget->stLink.qwID == qwTaskID )
     {
         SETPRIORITY( pstTarget->qwFlags, bPriority );
-	pstTarget->stride=120*(1/bPriority);
-
     }
     // 실행중인 태스크가 아니면 준비 리스트에서 찾아서 해당 우선 순위의 리스트로 이동
     else
@@ -424,14 +424,12 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
             {
                 // 우선 순위를 설정
                 SETPRIORITY( pstTarget->qwFlags, bPriority );
-	pstTarget->stride=120*(1/bPriority);
             }
         }
         else
         {
             // 우선 순위를 설정하고 준비 리스트에 다시 삽입
             SETPRIORITY( pstTarget->qwFlags, bPriority );
-	pstTarget->stride=120*(1/bPriority);
             kAddTaskToReadyList( pstTarget );
         }
     }
@@ -459,15 +457,9 @@ void kSchedule( void )
     // 동안 인터럽트가 발생하지 못하도록 설정
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
-   int stride,count,totalcount;
-count=0;
- 
-	pstNextTask=kGetNextTaskToRun();
-	pstNextTask->usecount+=pstNextTask->stride;
-	pstNextTask->realcount++;
-
+    
     // 실행할 다음 태스크를 얻음
-//    pstNextTask = kGetNextTaskToRun();
+    pstNextTask = kGetNextTaskToRun();
     if( pstNextTask == NULL )
     {
         // 임계 영역 끝
@@ -476,6 +468,7 @@ count=0;
     }
     
     // 현재 수행중인 태스크의 정보를 수정한 뒤 콘텍스트 전환
+    pstRunningTask = gs_stScheduler.pstRunningTask; 
     gs_stScheduler.pstRunningTask = pstNextTask;
     
     // 유휴 태스크에서 전환되었다면 사용한 프로세서 시간을 증가시킴
@@ -484,7 +477,17 @@ count=0;
         gs_stScheduler.qwSpendProcessorTimeInIdleTask += 
             TASK_PROCESSORTIME - gs_stScheduler.iProcessorTime;
     }
-    
+
+    // 다음에 수행할 태스크가 FPU를 쓴 태스크가 아니라면 TS 비트 설정
+    if( gs_stScheduler.qwLastFPUUsedTaskID != pstNextTask->stLink.qwID )
+    {
+        kSetTS();
+    }   
+    else
+    {
+        kClearTS();
+    }
+
     // 태스크 종료 플래그가 설정된 경우 콘텍스트를 저장할 필요가 없으므로, 대기 리스트에
     // 삽입하고 콘텍스트 전환
     if( pstRunningTask->qwFlags & TASK_FLAGS_ENDTASK )
@@ -517,13 +520,9 @@ BOOL kScheduleInInterrupt( void )
     
     // 임계 영역 시작
     bPreviousFlag = kLockForSystemData();
-    int count=0;
-	
-    pstNextTask=kGetNextTaskToRun();
-	pstNextTask->usecount+=pstNextTask->stride;
-	pstNextTask->realcount++;
+    
     // 전환할 태스크가 없으면 종료
-   // pstNextTask = kGetNextTaskToRun();
+    pstNextTask = kGetNextTaskToRun();
     if( pstNextTask == NULL )
     {
         // 임계 영역 끝
@@ -561,6 +560,16 @@ BOOL kScheduleInInterrupt( void )
     }
     // 임계 영역 끝
     kUnlockForSystemData( bPreviousFlag );
+
+    // 다음에 수행할 태스크가 FPU를 쓴 태스크가 아니라면 TS 비트 설정
+    if( gs_stScheduler.qwLastFPUUsedTaskID != pstNextTask->stLink.qwID )
+    {
+        kSetTS();
+    }   
+    else
+    {
+        kClearTS();
+    }
 
     // 전환해서 실행할 태스크를 Running Task로 설정하고 콘텍스트를 IST에 복사해서
     // 자동으로 태스크 전환이 일어나도록 함
@@ -617,7 +626,7 @@ BOOL kEndTask( QWORD qwTaskID )
         kUnlockForSystemData( bPreviousFlag );
         
         kSchedule();
-        
+
         // 태스크가 전환 되었으므로 아래 코드는 절대 실행되지 않음
         while( 1 ) ;
     }
@@ -673,7 +682,7 @@ int kGetReadyTaskCount( void )
     // 모든 준비 큐를 확인하여 태스크 개수를 구함
     for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
     {
-        iTotalCount += kGetListCount( &( gs_stScheduler.vstReadyList ) );
+        iTotalCount += kGetListCount( &( gs_stScheduler.vstReadyList[ i ] ) );
     }
     
     // 임계 영역 끝
@@ -919,3 +928,24 @@ void kHaltProcessorByLoad( void )
         kHlt();
     }
 }
+
+
+//==============================================================================
+//  FPU 관련
+//==============================================================================
+/**
+ *  마지막으로 FPU를 사용한 태스크 ID를 반환
+ */
+QWORD kGetLastFPUUsedTaskID( void )
+{
+    return gs_stScheduler.qwLastFPUUsedTaskID;
+}
+
+/**
+ *  마지막으로 FPU를 사용한 태스크 ID를 설정
+ */
+void kSetLastFPUUsedTaskID( QWORD qwTaskID )
+{
+    gs_stScheduler.qwLastFPUUsedTaskID = qwTaskID;
+}
+
