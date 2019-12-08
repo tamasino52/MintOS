@@ -519,7 +519,7 @@ static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry
     }
 
     // 루트 디렉터리를 읽음
-    if( kReadCluster( 0, gs_vbTempBuffer ) == FALSE )
+    if( kReadCluster(gs_stFileSystemManager.pstDirIndex, gs_vbTempBuffer ) == FALSE )
     {
         return -1;
     }
