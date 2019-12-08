@@ -66,11 +66,9 @@ Utility:
 	@echo 
 	@echo =========== Utility Build Complete ===========
 	@echo 
-	
 run:
-	qemu-system-x86_64 -L . -fda Disk.img -m 64 -localtime -M pc
-	qemu-system-x86_64 -rtc base=localtime
-
+	qemu-system-x86_64 -L . -m 64 -fda Disk.img -hda HDD.img -boot a -localtime -M pc
+	
 # 소스 파일을 제외한 나머지 파일 정리	
 clean:
 	make -C 00.BootLoader clean
