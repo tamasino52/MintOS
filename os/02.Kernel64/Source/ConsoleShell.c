@@ -1474,7 +1474,7 @@ static void kCreateFileInRootDirectory( const char* pcParameterBuffer )
         return ;
     }
 
-    pstFile = fopen( vcFileName, "w" );
+    pstFile = fopen(0, vcFileName, "w" );
     if( pstFile == NULL )
     {
         kPrintf( "File Create Fail\n" );
@@ -1503,7 +1503,7 @@ static void kDeleteFileInRootDirectory( const char* pcParameterBuffer )
         return ;
     }
 
-    if( remove( vcFileName ) != 0 )
+    if( remove( 0, vcFileName ) != 0 )
     {
         kPrintf( "File Not Found or File Opened\n" );
         return ;
@@ -1773,7 +1773,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
         return ;
     }
     // 테스트용 파일을 삭제
-    remove( "testfileio.bin" );
+    remove( 0, "testfileio.bin" );
 
     //==========================================================================
     // 파일 열기 테스트
