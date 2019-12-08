@@ -2105,7 +2105,13 @@ static void kCdDir( const char* pcParameterBuffer )
 
 	if( kOpenDir( vcFileName ) == -1 )
 	{
-		kPrintf( "Failed\n" );
+		kPrintf( "kFindDirectoryEntry Failed\n" );
+		return;
+	}
+
+	if (kOpenDir(vcFileName) == -2)
+	{
+		kPrintf("kGetDirectoryEntryData Failed\n");
 		return;
 	}
 

@@ -631,7 +631,7 @@ int kOpenDir( const char* pcDirectoryName )
 	if( kGetDirectoryEntryData( dirEntry.dwStartClusterIndex, 0, &dotEntry )==FALSE )
 	{
 		kUnlock( &(gs_stFileSystemManager.stMutex) );
-		return -1;
+		return -2;
 	}
 
 	gs_stFileSystemManager.pstDirIndex = dirEntry.dwStartClusterIndex;
