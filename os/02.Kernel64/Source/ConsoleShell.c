@@ -1530,7 +1530,7 @@ static void kShowRootDirectory( const char* pcParameterBuffer )
     kGetFileSystemInformation( &stManager );
      
     // 루트 디렉터리를 엶
-    pstDirectory = opendir( "/" );
+    pstDirectory = opendir(0, "/" );
     if( pstDirectory == NULL )
     {
         kPrintf( "Root Directory Open Fail\n" );
@@ -1647,7 +1647,7 @@ static void kWriteDataToFile( const char* pcParameterBuffer )
     }
     
     // 파일 생성
-    fp = fopen( vcFileName, "w" );
+    fp = fopen( 0, vcFileName, "w" );
     if( fp == NULL )
     {
         kPrintf( "%s File Open Fail\n", vcFileName );
@@ -1709,7 +1709,7 @@ static void kReadDataFromFile( const char* pcParameterBuffer )
     }
     
     // 파일 생성
-    fp = fopen( vcFileName, "r" );
+    fp = fopen( 0, vcFileName, "r" );
     if( fp == NULL )
     {
         kPrintf( "%s File Open Fail\n", vcFileName );
@@ -1780,7 +1780,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "1. File Open Fail Test..." );
     // r 옵션은 파일을 생성하지 않으므로, 테스트 파일이 없는 경우 NULL이 되어야 함
-    pstFile = fopen( "testfileio.bin", "r" );
+    pstFile = fopen( 0, "testfileio.bin", "r" );
     if( pstFile == NULL )
     {
         kPrintf( "[Pass]\n" );
@@ -1796,7 +1796,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "2. File Create Test..." );
     // w 옵션은 파일을 생성하므로, 정상적으로 핸들이 반환되어야함
-    pstFile = fopen( "testfileio.bin", "w" );
+    pstFile = fopen( 0, "testfileio.bin", "w" );
     if( pstFile != NULL )
     {
         kPrintf( "[Pass]\n" );
@@ -2001,7 +2001,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "8. File Delete Fail Test..." );
     // 파일이 열려있는 상태이므로 파일을 지우려고 하면 실패해야 함
-    if( remove( "testfileio.bin" ) != 0 )
+    if( remove( 0, "testfileio.bin" ) != 0 )
     {
         kPrintf( "[Pass]\n" );
     }
@@ -2029,7 +2029,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "10. File Delete Test..." );
     // 파일이 닫혔으므로 정상적으로 지워져야 함 
-    if( remove( "testfileio.bin" ) == 0 )
+    if( remove( 0, "testfileio.bin" ) == 0 )
     {
         kPrintf( "[Pass]\n" );
     }
