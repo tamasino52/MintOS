@@ -2079,7 +2079,7 @@ static void kCdDir( const char* pcParameterBuffer )
 
 	kInitializeParameter( &stList, pcParameterBuffer );
 	iLength = kGetNextParameter( &stList, vcFileName );
-	vcFileName[iLength] = "\0";
+	vcFileName[iLength] = '\0';
 
 	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
 	{
@@ -2109,7 +2109,7 @@ static void kCdDir( const char* pcParameterBuffer )
 		return;
 	}
 
-	kPrinf( "Open Successed\n" );
+	kPrintf( "Open Successed\n" );
 }
 
 static void kMakeDir( const char* pcParameterBuffer )
@@ -2123,7 +2123,7 @@ static void kMakeDir( const char* pcParameterBuffer )
 
 	kInitializeParameter( &stList, pcParameterBuffer );
 	iLength = kGetNextParameter( &stList, vcFileName );
-	vcFileName[iLength] = "\0";
+	vcFileName[iLength] = '\0';
 
 	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
 	{
@@ -2151,7 +2151,7 @@ static void kRmDir( const char* pcParameterBuffer )
 
 	kInitializeParameter( &stList, pcParameterBuffer );
 	iLength = kGetNextParameter( &stList, vcFileName );
-	vcFileName[iLength] = "\0";
+	vcFileName[iLength] = '\0';
 
 	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
 	{
