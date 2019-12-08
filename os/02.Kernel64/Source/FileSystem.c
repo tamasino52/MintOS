@@ -1401,7 +1401,7 @@ DIR* kOpenDirectory( int dirIndex, const char* pcDirectoryName )
     
     // 디렉터리 타입으로 설정하고 현재 디렉터리 엔트리의 오프셋을 초기화
     pstDirectory->bType = FILESYSTEM_TYPE_DIRECTORY;
-    pstDirectory->stDirectoryHandle.iCurrentOffset = dirIndex;
+    pstDirectory->stDirectoryHandle.iCurrentOffset = 0;
 	if ( dirIndex == 0 ) {
 		pstDirectory->stDirectoryHandle.pstDirectoryBuffer = pstDirectoryBuffer;
 	}
