@@ -132,9 +132,7 @@ typedef struct kDirectoryEntryStruct
 {
     // 파일 이름
     char vcFileName[ FILESYSTEM_MAXFILENAMELENGTH ];
-	// 파일 타입
 	BYTE bType;
-	// 현재 디렉토리의 클러스터 인덱스
 	DWORD dirClusterIndex;
     // 파일의 실제 크기
     DWORD dwFileSize;
@@ -193,12 +191,7 @@ typedef struct kFileSystemManagerStruct
     // 파일 시스템이 정상적으로 인식되었는지 여부
     BOOL bMounted;
     
-	// 현재 디렉토리의 클러스터 인덱스
 	DWORD pstDirIndex;
-
-	// 현재 디렉토리의 경로
-	char* dirRootName[100];
-
     // 각 영역의 섹터 수와 시작 LBA 어드레스
     DWORD dwReservedSectorCount;
     DWORD dwClusterLinkAreaStartAddress;
@@ -215,6 +208,7 @@ typedef struct kFileSystemManagerStruct
     
     // 핸들 풀(Handle Pool)의 어드레스
     FILE* pstHandlePool;
+	char dirRootName[100];
 } FILESYSTEMMANAGER;
 
 
@@ -236,20 +230,25 @@ static BOOL kWriteCluster( DWORD dwOffset, BYTE* pbBuffer );
 static DWORD kFindFreeCluster( void );
 static BOOL kSetClusterLinkData( DWORD dwClusterIndex, DWORD dwData );
 static BOOL kGetClusterLinkData( DWORD dwClusterIndex, DWORD* pdwData );
-static int kFindFreeDirectoryEntry(int dirIndex);
+static int kFindFreeDirectoryEntry( void );
 static BOOL kSetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* pstEntry );
 static BOOL kGetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* pstEntry );
-static int kFindDirectoryEntry(int dirIndex, const char* pcFileName, DIRECTORYENTRY* pstEntry );
+static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry );
 void kGetFileSystemInformation( FILESYSTEMMANAGER* pstManager );
 
 //  고수준 함수(High Level Function)
-FILE* kOpenFile(int dirIndex, const char* pcFileName, const char* pcMode );
+BOOL kCreateDir( const char* pcDirName );
+int kOpenDir( const char* pcDirectoryName );
+int kCloseDir( void );
+int kRemoveAllFile( int dirIndex );
+int kRemoveDir( const char* pcDirectoryName );
+FILE* kOpenFile( const char* pcFileName, const char* pcMode );
 DWORD kReadFile( void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFile );
 DWORD kWriteFile( const void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFile );
 int kSeekFile( FILE* pstFile, int iOffset, int iOrigin );
 int kCloseFile( FILE* pstFile );
-int kRemoveFile( int dirIndex, const char* pcFileName );
-DIR* kOpenDirectory(int dirIndex, const char* pcDirectoryName );
+int kRemoveFile( const char* pcFileName );
+DIR* kOpenDirectory( const char* pcDirectoryName );
 struct kDirectoryEntryStruct* kReadDirectory( DIR* pstDirectory );
 void kRewindDirectory( DIR* pstDirectory );
 int kCloseDirectory( DIR* pstDirectory );
@@ -258,9 +257,9 @@ BOOL kIsFileOpened( const DIRECTORYENTRY* pstEntry );
 
 static void* kAllocateFileDirectoryHandle( void );
 static void kFreeFileDirectoryHandle( FILE* pstFile );
-static BOOL kCreateFile( int dirIndex, const char* pcFileName, DIRECTORYENTRY* pstEntry,
+static BOOL kCreateFile( const char* pcFileName, DIRECTORYENTRY* pstEntry, 
         int* piDirectoryEntryIndex );
 static BOOL kFreeClusterUntilEnd( DWORD dwClusterIndex );
-static BOOL kUpdateDirectoryEntry( int dirIndex, FILEHANDLE* pstFileHandle );
+static BOOL kUpdateDirectoryEntry( FILEHANDLE* pstFileHandle );
 
 #endif /*__FILESYSTEM_H__*/

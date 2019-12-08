@@ -60,6 +60,9 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "writefile", "Write Data To File, ex) writefile a.txt", kWriteDataToFile },
         { "readfile", "Read Data From File, ex) readfile a.txt", kReadDataFromFile },
         { "testfileio", "Test File I/O Function", kTestFileIO },
+		{ "cd", "cd", kCdDir },
+		{ "makedir", "makedir", kMakeDir },
+		{ "rmdir", "rmdir", kRmDir },
 };                                     
 
 //==============================================================================
@@ -105,7 +108,7 @@ void kStartConsoleShell( void )
             }
             
             // 프롬프트 출력 및 커맨드 버퍼 초기화
-            kPrintf( "%s", CONSOLESHELL_PROMPTMESSAGE );            
+            kPrintf( "%s%c", CONSOLESHELL_PROMPTMESSAGE, '>' );            
             kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
             iCommandBufferIndex = 0;
         }
@@ -1474,7 +1477,7 @@ static void kCreateFileInRootDirectory( const char* pcParameterBuffer )
         return ;
     }
 
-    pstFile = fopen(0, vcFileName, "w" );
+    pstFile = fopen( vcFileName, "w" );
     if( pstFile == NULL )
     {
         kPrintf( "File Create Fail\n" );
@@ -1503,7 +1506,7 @@ static void kDeleteFileInRootDirectory( const char* pcParameterBuffer )
         return ;
     }
 
-    if( remove( 0, vcFileName ) != 0 )
+    if( remove( vcFileName ) != 0 )
     {
         kPrintf( "File Not Found or File Opened\n" );
         return ;
@@ -1530,7 +1533,7 @@ static void kShowRootDirectory( const char* pcParameterBuffer )
     kGetFileSystemInformation( &stManager );
      
     // 루트 디렉터리를 엶
-    pstDirectory = opendir(0, "/" );
+    pstDirectory = opendir( "/" );
     if( pstDirectory == NULL )
     {
         kPrintf( "Root Directory Open Fail\n" );
@@ -1597,6 +1600,29 @@ static void kShowRootDirectory( const char* pcParameterBuffer )
         kMemCpy( vcBuffer + 55, vcTempValue, kStrLen( vcTempValue ) + 1 );
         kPrintf( "    %s\n", vcBuffer );
 
+		if( pstEntry -> bType == FILESYSTEM_TYPE_DIRECTORY )
+		{
+			kMemSet( vcBuffer, ' ', sizeof( vcBuffer ) - 1);
+			vcBuffer[ sizeof( vcBuffer ) -1 ] = '\0';
+
+			if( pstEntry -> dirClusterIndex == 0 )
+			{
+				kMemCpy( vcBuffer, ".", 1 );
+			}
+			else if( pstEntry -> dirClusterIndex == 1 )
+			{
+				kMemCpy( vcBuffer, "..", 2 );
+			}
+			else
+			{
+				kMemCpy( vcBuffer, pstEntry->d_name, kStrLen( pstEntry->d_name ) );
+			}
+
+			kMemCpy( vcBuffer + 30, "Directory", sizeof("Directory") );
+
+			kPrintf( "    %s\n", vcBuffer );
+		}
+
         if( ( iCount != 0 ) && ( ( iCount % 20 ) == 0 ) )
         {
             kPrintf( "Press any key to continue... ('q' is exit) : " );
@@ -1647,7 +1673,7 @@ static void kWriteDataToFile( const char* pcParameterBuffer )
     }
     
     // 파일 생성
-    fp = fopen( 0, vcFileName, "w" );
+    fp = fopen( vcFileName, "w" );
     if( fp == NULL )
     {
         kPrintf( "%s File Open Fail\n", vcFileName );
@@ -1709,7 +1735,7 @@ static void kReadDataFromFile( const char* pcParameterBuffer )
     }
     
     // 파일 생성
-    fp = fopen( 0, vcFileName, "r" );
+    fp = fopen( vcFileName, "r" );
     if( fp == NULL )
     {
         kPrintf( "%s File Open Fail\n", vcFileName );
@@ -1773,14 +1799,14 @@ static void kTestFileIO( const char* pcParameterBuffer )
         return ;
     }
     // 테스트용 파일을 삭제
-    remove( 0, "testfileio.bin" );
+    remove( "testfileio.bin" );
 
     //==========================================================================
     // 파일 열기 테스트
     //==========================================================================
     kPrintf( "1. File Open Fail Test..." );
     // r 옵션은 파일을 생성하지 않으므로, 테스트 파일이 없는 경우 NULL이 되어야 함
-    pstFile = fopen( 0, "testfileio.bin", "r" );
+    pstFile = fopen( "testfileio.bin", "r" );
     if( pstFile == NULL )
     {
         kPrintf( "[Pass]\n" );
@@ -1796,7 +1822,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "2. File Create Test..." );
     // w 옵션은 파일을 생성하므로, 정상적으로 핸들이 반환되어야함
-    pstFile = fopen( 0, "testfileio.bin", "w" );
+    pstFile = fopen( "testfileio.bin", "w" );
     if( pstFile != NULL )
     {
         kPrintf( "[Pass]\n" );
@@ -2001,7 +2027,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "8. File Delete Fail Test..." );
     // 파일이 열려있는 상태이므로 파일을 지우려고 하면 실패해야 함
-    if( remove( 0, "testfileio.bin" ) != 0 )
+    if( remove( "testfileio.bin" ) != 0 )
     {
         kPrintf( "[Pass]\n" );
     }
@@ -2029,7 +2055,7 @@ static void kTestFileIO( const char* pcParameterBuffer )
     //==========================================================================
     kPrintf( "10. File Delete Test..." );
     // 파일이 닫혔으므로 정상적으로 지워져야 함 
-    if( remove( 0, "testfileio.bin" ) == 0 )
+    if( remove( "testfileio.bin" ) == 0 )
     {
         kPrintf( "[Pass]\n" );
     }
@@ -2040,4 +2066,104 @@ static void kTestFileIO( const char* pcParameterBuffer )
     
     // 메모리를 해제
     kFreeMemory( pbBuffer );    
+}
+
+static void kCdDir( const char* pcParameterBuffer )
+{
+	PARAMETERLIST stList;
+	char vcFileName[50];
+	int iLength, i;
+	DWORD dwCluster;
+	DIRECTORYENTRY stEntry;
+	FILE* pstFile;
+
+	kInitializeParameter( &stList, pcParameterBuffer );
+	iLength = kGetNextParameter( &stList, vcFileName );
+	vcFileName[iLength] = "\0";
+
+	if( ( iLength = ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	{
+		kPrintf( "File Name is Long or Short\n" );
+		return;
+	}
+
+	if( kMemCpy( vcFileName, "..", 2 ) == 0 )
+	{
+		if( kCloseDir() == 0 )
+		{
+			kPrintf( "Root Directory Open\n" );
+			return;
+		}
+		kPrintf( "Failed\n" );
+	}
+
+	if( kMemCpy( vcFileName, ".", 1 ) == 0 )
+	{
+		kPrintf( "Current Directory\n" );
+		return;
+	}
+
+	if( kOpenDir( vcFileName ) == -1 )
+	{
+		kPrintf( "Failed\n" );
+		return;
+	}
+
+	kPrinf( "Open Successed\n" );
+}
+
+static void kMakeDir( const char* pcParameterBuffer )
+{
+	PARAMETERLIST stList;
+	char vcFileName[50];
+	int iLength, i;
+	DWORD dwCluster;
+	DIRECTORYENTRY stEntry;
+	FILE* pstFile;
+
+	kInitializeParameter( &stList, pcParameterBuffer );
+	iLength = kGetNextParameter( &stList, vcFileName );
+	vcFileName[iLength] = "\0";
+
+	if( ( iLength = ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	{
+		kPrintf( "File Name is Long or Short\n" );
+		return;
+	}
+
+	if( kCreateDir( vcFileName ) == FALSE )
+	{
+		kPrintf( "Failed\n" );
+		return;
+	}
+
+	kPrintf( "Make Successed\n" );
+}
+
+static void kRmDir( const char* pcParameterBuffer )
+{
+	PARAMETERLIST stList;
+	char vcFileName[50];
+	int iLength, i;
+	DWORD dwCluster;
+	DIRECTORYENTRY stEntry;
+	FILE* pstFile;
+
+	kInitializeParameter( &stList, pcParameterBuffer );
+	iLength = kGetNextParameter( &stList, vcFileName );
+	vcFileName[iLength] = "\0";
+
+	if( ( iLength = ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	{
+		kPrintf( "File Name is Long or Short\n" );
+		return;
+	}
+
+	if( kRemoveDir( vcFileName ) == -1 )
+	{
+		kPrintf( "Failed\n" );
+		return;
+	}
+
+	kPrintf( "Delete Successed\n" );
 }

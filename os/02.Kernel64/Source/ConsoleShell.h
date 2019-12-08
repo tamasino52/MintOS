@@ -103,5 +103,8 @@ static void kShowRootDirectory( const char* pcParameterBuffer );
 static void kWriteDataToFile( const char* pcParameterBuffer );
 static void kReadDataFromFile( const char* pcParameterBuffer );
 static void kTestFileIO( const char* pcParameterBuffer );
+static void kCdDir( const char* pcParameterBuffer );
+static void kMakeDir( const char* pcParameterBuffer );
+static void kRmDir( const char* pcParameterBuffer );
 
 #endif /*__CONSOLESHELL_H__*/
