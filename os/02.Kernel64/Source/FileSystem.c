@@ -535,7 +535,7 @@ static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry
             return i;
         }
     }
-    return -1;
+    return -2;
 }
 
 /**
