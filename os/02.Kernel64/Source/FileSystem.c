@@ -470,7 +470,7 @@ static BOOL kSetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* ps
     kMemCpy( pstDirEntry + iIndex, pstEntry, sizeof( DIRECTORYENTRY ) );
 
     // 디렉터리에 씀
-    if( kWriteCluster( pstDirEntry, gs_vbTempBuffer ) == FALSE )
+    if( kWriteCluster( dirIndex, gs_vbTempBuffer ) == FALSE )
     {
         return FALSE;
     }    
@@ -591,7 +591,7 @@ static void kFreeFileDirectoryHandle( FILE* pstFile )
 /**
  *  파일을 생성
  */
-static BOOL kCreateFile(int dirIndex, const char* pcFileName, DIRECTORYENTRY* pstEntry, 
+static BOOL kCreateFile( const char* pcFileName, DIRECTORYENTRY* pstEntry, 
         int* piDirectoryEntryIndex )
 {
     DWORD dwCluster;
@@ -605,7 +605,7 @@ static BOOL kCreateFile(int dirIndex, const char* pcFileName, DIRECTORYENTRY* ps
     }
 
     // 빈 디렉터리 엔트리를 검색
-    *piDirectoryEntryIndex = kFindFreeDirectoryEntry(dirIndex);
+    *piDirectoryEntryIndex = kFindFreeDirectoryEntry(gs_stFileSystemManager.pstDirIndex);
     if( *piDirectoryEntryIndex == -1 )
     {
         // 실패할 경우 할당 받은 클러스터를 반환해야 함
@@ -619,7 +619,7 @@ static BOOL kCreateFile(int dirIndex, const char* pcFileName, DIRECTORYENTRY* ps
     pstEntry->dwFileSize = 0;
     
     // 디렉터리 엔트리를 등록
-    if( kSetDirectoryEntryData(dirIndex, *piDirectoryEntryIndex, pstEntry ) == FALSE )
+    if( kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, *piDirectoryEntryIndex, pstEntry ) == FALSE )
     {
         // 실패할 경우 할당 받은 클러스터를 반환해야 함
         kSetClusterLinkData( dwCluster, FILESYSTEM_FREECLUSTER );
@@ -665,7 +665,7 @@ static BOOL kFreeClusterUntilEnd( DWORD dwClusterIndex )
 /**
  *  파일을 열거나 생성 
  */
-FILE* kOpenFile( int dirIndex, const char* pcFileName, const char* pcMode )
+FILE* kOpenFile( const char* pcFileName, const char* pcMode )
 {
     DIRECTORYENTRY stEntry;
     int iDirectoryEntryOffset;
@@ -687,7 +687,7 @@ FILE* kOpenFile( int dirIndex, const char* pcFileName, const char* pcMode )
     //==========================================================================
     // 파일이 먼저 존재하는가 확인하고, 없다면 옵션을 보고 파일을 생성
     //==========================================================================
-    iDirectoryEntryOffset = kFindDirectoryEntry(dirIndex, pcFileName, &stEntry );
+    iDirectoryEntryOffset = kFindDirectoryEntry( gs_stFileSystemManager.pstDirIndex, pcFileName, &stEntry );
     if( iDirectoryEntryOffset == -1 )
     {
         // 파일이 없다면 읽기(r, r+) 옵션은 실패
@@ -699,7 +699,7 @@ FILE* kOpenFile( int dirIndex, const char* pcFileName, const char* pcMode )
         }
         
         // 나머지 옵션들은 파일을 생성
-        if( kCreateFile(dirIndex, pcFileName, &stEntry, &iDirectoryEntryOffset ) == FALSE )
+        if( kCreateFile( pcFileName, &stEntry, &iDirectoryEntryOffset ) == FALSE )
         {
             // 동기화
             kUnlock( &( gs_stFileSystemManager.stMutex ) );
@@ -741,7 +741,7 @@ FILE* kOpenFile( int dirIndex, const char* pcFileName, const char* pcMode )
         // 파일의 내용이 모두 비워졌으므로, 크기를 0으로 설정
         stEntry.dwFileSize = 0;
 
-        if( kSetDirectoryEntryData( dirIndex, iDirectoryEntryOffset, &stEntry) == FALSE )
+        if( kSetDirectoryEntryData( gs_stFileSystemManager.pstDirIndex, iDirectoryEntryOffset, &stEntry) == FALSE )
         {
             // 동기화
             kUnlock( &( gs_stFileSystemManager.stMutex ) );
@@ -872,13 +872,13 @@ DWORD kReadFile( void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFile )
 /**
  *  디렉터리에서 디렉터리 엔트리 값을 갱신
  */
-static BOOL kUpdateDirectoryEntry(int dirIndex, FILEHANDLE* pstFileHandle )
+static BOOL kUpdateDirectoryEntry( FILEHANDLE* pstFileHandle )
 {
     DIRECTORYENTRY stEntry;
     
     // 디렉터리 엔트리 검색
     if( ( pstFileHandle == NULL ) ||
-        ( kGetDirectoryEntryData(dirIndex, pstFileHandle->iDirectoryEntryOffset, &stEntry)
+        ( kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, pstFileHandle->iDirectoryEntryOffset, &stEntry)
             == FALSE ) )
     {
         return FALSE;
@@ -889,7 +889,7 @@ static BOOL kUpdateDirectoryEntry(int dirIndex, FILEHANDLE* pstFileHandle )
     stEntry.dwStartClusterIndex = pstFileHandle->dwStartClusterIndex;
 
     // 변경된 디렉터리 엔트리를 설정
-    if( kSetDirectoryEntryData(dirIndex, pstFileHandle->iDirectoryEntryOffset, &stEntry )
+    if( kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, pstFileHandle->iDirectoryEntryOffset, &stEntry )
             == FALSE )
     {
         return FALSE;
@@ -1290,7 +1290,7 @@ BOOL kIsFileOpened( const DIRECTORYENTRY* pstEntry )
 /**
  *  파일을 삭제
  */
-int kRemoveFile( int dirIndex, const char* pcFileName )
+int kRemoveFile( const char* pcFileName )
 {
     DIRECTORYENTRY stEntry;
     int iDirectoryEntryOffset;
@@ -1308,7 +1308,7 @@ int kRemoveFile( int dirIndex, const char* pcFileName )
     kLock( &( gs_stFileSystemManager.stMutex ) );
     
     // 파일이 존재하는가 확인
-    iDirectoryEntryOffset = kFindDirectoryEntry( dirIndex, pcFileName, &stEntry );
+    iDirectoryEntryOffset = kFindDirectoryEntry( gs_stFileSystemManager.pstDirIndex, pcFileName, &stEntry );
     if( iDirectoryEntryOffset == -1 ) 
     { 
         // 동기화
@@ -1335,7 +1335,7 @@ int kRemoveFile( int dirIndex, const char* pcFileName )
 
     // 디렉터리 엔트리를 빈 것으로 설정
     kMemSet( &stEntry, 0, sizeof( stEntry ) );
-    if( kSetDirectoryEntryData(dirIndex, iDirectoryEntryOffset, &stEntry ) == FALSE )
+    if( kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iDirectoryEntryOffset, &stEntry ) == FALSE )
     {
         // 동기화
         kUnlock( &( gs_stFileSystemManager.stMutex ) );
@@ -1350,7 +1350,7 @@ int kRemoveFile( int dirIndex, const char* pcFileName )
 /**
  *  디렉터리를 엶
  */
-DIR* kOpenDirectory( int dirIndex, const char* pcDirectoryName )
+DIR* kOpenDirectory( const char* pcDirectoryName )
 {
     DIR* pstDirectory;
     DIRECTORYENTRY* pstDirectoryBuffer;
@@ -1387,7 +1387,7 @@ DIR* kOpenDirectory( int dirIndex, const char* pcDirectoryName )
     }
     
     // 디렉터리를 읽음
-    if( kReadCluster( dirIndex, ( BYTE* ) pstDirectoryBuffer ) == FALSE )
+    if( kReadCluster(gs_stFileSystemManager.pstDirIndex, ( BYTE* ) pstDirectoryBuffer ) == FALSE )
     {
         // 실패하면 핸들과 메모리를 모두 반환해야 함
         kFreeFileDirectoryHandle( pstDirectory );
@@ -1402,12 +1402,8 @@ DIR* kOpenDirectory( int dirIndex, const char* pcDirectoryName )
     // 디렉터리 타입으로 설정하고 현재 디렉터리 엔트리의 오프셋을 초기화
     pstDirectory->bType = FILESYSTEM_TYPE_DIRECTORY;
     pstDirectory->stDirectoryHandle.iCurrentOffset = 0;
-	if ( dirIndex == 0 ) {
-		pstDirectory->stDirectoryHandle.pstDirectoryBuffer = pstDirectoryBuffer;
-	}
-	else {
-		pstDirectory->stDirectoryHandle.pstDirectoryBuffer = kOpenDirectory(0,"/");
-	}
+	pstDirectory->stDirectoryHandle.pstDirectoryBuffer = pstDirectoryBuffer;
+	pstDirectory->stDirectoryHandle.pstDirectoryBuffer = kOpenDirectory("/");
 
     // 동기화
     kUnlock( &( gs_stFileSystemManager.stMutex ) );
