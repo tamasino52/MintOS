@@ -515,7 +515,7 @@ static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry
     // 파일 시스템을 인식하지 못했으면 실패
     if( gs_stFileSystemManager.bMounted == FALSE )
     {
-        return -2;
+        return -1;
     }
 
     // 루트 디렉터리를 읽음
