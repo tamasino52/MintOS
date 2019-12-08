@@ -909,6 +909,7 @@ DWORD kWriteFile( const void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFi
     DWORD dwAllocatedClusterIndex;
     DWORD dwNextClusterIndex;
     FILEHANDLE* pstFileHandle;
+	
 
     // 핸들이 파일 타입이 아니면 실패
     if( ( pstFile == NULL ) ||
@@ -1018,12 +1019,12 @@ DWORD kWriteFile( const void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFi
     }
 
     //==========================================================================
-    // 파일 크기가 변했다면 루트 디렉터리에 있는 디렉터리 엔트리 정보를 갱신
+    // 파일 크기가 변했다면 디렉터리에 있는 디렉터리 엔트리 정보를 갱신
     //==========================================================================
     if( pstFileHandle->dwFileSize < pstFileHandle->dwCurrentOffset )
     {
         pstFileHandle->dwFileSize = pstFileHandle->dwCurrentOffset;
-        kUpdateDirectoryEntry(dirIndex, pstFileHandle );
+        kUpdateDirectoryEntry(pstFileHandle->iDirectoryEntryOffset, pstFileHandle );
     }
     
     // 동기화
@@ -1334,7 +1335,7 @@ int kRemoveFile( int dirIndex, const char* pcFileName )
 
     // 디렉터리 엔트리를 빈 것으로 설정
     kMemSet( &stEntry, 0, sizeof( stEntry ) );
-    if( kSetDirectoryEntryData( iDirectoryEntryOffset, &stEntry ) == FALSE )
+    if( kSetDirectoryEntryData(dirIndex, iDirectoryEntryOffset, &stEntry ) == FALSE )
     {
         // 동기화
         kUnlock( &( gs_stFileSystemManager.stMutex ) );
