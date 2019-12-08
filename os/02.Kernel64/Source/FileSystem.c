@@ -628,6 +628,7 @@ int kOpenDir( const char* pcDirectoryName )
 		return -1;
 	}
 	else {
+		kUnlock(&(gs_stFileSystemManager.stMutex));
 		return -2;
 	}
 
