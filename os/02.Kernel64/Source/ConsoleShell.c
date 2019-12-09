@@ -2081,7 +2081,7 @@ static void kCdDir( const char* pcParameterBuffer )
 	iLength = kGetNextParameter( &stList, vcFileName );
 	vcFileName[iLength] = '\0';
 
-	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength <= 0 ) )
 	{
 		kPrintf( "File Name is Long or Short\n" );
 		return;
@@ -2131,7 +2131,7 @@ static void kMakeDir( const char* pcParameterBuffer )
 	iLength = kGetNextParameter( &stList, vcFileName );
 	vcFileName[iLength] = '\0';
 
-	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength <= 0 ) )
 	{
 		kPrintf( "File Name is Long or Short\n" );
 		return;
@@ -2159,7 +2159,7 @@ static void kRmDir( const char* pcParameterBuffer )
 	iLength = kGetNextParameter( &stList, vcFileName );
 	vcFileName[iLength] = '\0';
 
-	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength == 0 ) )
+	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength <= 0 ) )
 	{
 		kPrintf( "File Name is Long or Short\n" );
 		return;
