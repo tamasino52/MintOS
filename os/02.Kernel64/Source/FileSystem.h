@@ -155,7 +155,7 @@ static BOOL kWriteCluster( DWORD dwOffset, BYTE* pbBuffer );
 static DWORD kFindFreeCluster( void );
 static BOOL kSetClusterLinkData( DWORD dwClusterIndex, DWORD dwData );
 static BOOL kGetClusterLinkData( DWORD dwClusterIndex, DWORD* pdwData );
-static int kFindFreeDirectoryEntry( void );
+int kFindFreeDirectoryEntry( void );
 static BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry );
 BOOL kGetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* pstEntry );
 int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry );
