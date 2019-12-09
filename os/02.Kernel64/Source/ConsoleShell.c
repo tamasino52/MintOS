@@ -1869,7 +1869,7 @@ static void copy(const char* pcParameterBuffer)
 		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
 		kPrintf("kMemCpy complete\n");
 
-		kCloseDir();
+		kCdDir("..");
 		kPrintf("kCloseDir complete\n");
 
 		kRemoveFile(vcFileName);
