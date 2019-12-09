@@ -1857,12 +1857,7 @@ static void rename(const char* pcParameterBuffer)
 	PARAMETERLIST stList;
 	char vcFileName[50];
 	char vcNewFileName[50];
-	char vctmp[50];
 	int iLength, iNewNameLength;
-	DWORD dwCluster;
-	struct dirent* pstEntry;
-	int i;
-	FILE* pstFile;
 
 	pstDirectory = opendir();
 
