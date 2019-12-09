@@ -1345,8 +1345,9 @@ int kCloseDir( void )
 {
 	DIRECTORYENTRY dotDotEntry;    	
 
-    	kLock( &( gs_stFileSystemManager.stMutex ) );
-	if( kGetDirectoryEntryData( gs_stFileSystemManager.pstDirIndex , 1, &dotDotEntry) == FALSE )
+    kLock( &( gs_stFileSystemManager.stMutex ) );
+	//if( kGetDirectoryEntryData( gs_stFileSystemManager.pstDirIndex , 1, &dotDotEntry) == FALSE )
+	if(kFindDirectoryEntry("..", &dotDotEntry) == -1)
 	{
 		kUnlock( &( gs_stFileSystemManager.stMutex ) );
         	return -1;
