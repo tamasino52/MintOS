@@ -1814,6 +1814,12 @@ static void krmDir(const char* pcParameterBuffer)
 	kPrintf("Dir delete Success\n");
 }
 
+
+static void move(const char* pcParameterBuffer) {
+	copy(pcParameterBuffer);
+	kDeleteFileInRootDirectory(pcParameterBuffer);
+}
+
 static void copy(const char* pcParameterBuffer)
 {
 	PARAMETERLIST stList;
