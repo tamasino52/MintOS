@@ -1880,11 +1880,6 @@ static void rename(const char* pcParameterBuffer)
 		return;
 	}
 
-	if (kReadCluster(gs_stFileSystemManager.pstDirIndex, gs_vbTempBuffer) == FALSE)
-	{
-		return;
-	}
-
 	iLength = kStrLen(vcFileName);
 
 	pstDirEntry = (DIRECTORYENTRY*)pstDirectory->stDirectoryHandle.pstDirectoryBuffer;
@@ -1895,10 +1890,10 @@ static void rename(const char* pcParameterBuffer)
 			kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
 			kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
 			pstEntry->vcFileName[iLength] = "\0";
-			kPrintf("Success rename")
+			kPrintf("Success rename");
 		}
 	}
-	kPrintf("Rename fail")
+	kPrintf("Rename fail");
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)
