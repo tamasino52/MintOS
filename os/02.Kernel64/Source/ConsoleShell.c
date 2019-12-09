@@ -1845,21 +1845,24 @@ static void copy(const char* pcParameterBuffer)
 	if (kMemCmp(vcdir, "..", 2) == 0)
 	{
 		DIR* dirStart = kOpenDirectory();
+
 		kMemCpy(vcOlddir, dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName, kStrLen(dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName));
 		if (kCloseDir() == 0)
 		{
 			iFreeIndex = kFindFreeDirectoryEntry();
-			kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
+			kPrintf("kGetDirectoryEntryData complete\n");
 
-			kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
-			pstEmptyEntry->dirClusterIndex = iFreeIndex;
+			if (kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, &stEntry) == FALSE) {
+				kPrintf("kSetDirectoryEntryData fail\n");
+				return;
+			}
+			kPrintf("kSetDirectoryEntryData complete\n");
 
 			kCdDir(vcOlddir);
-			kRemoveFile(vcFileName);
-			kPrintf("Move Success\n");
+			kPrintf("Copy Success\n");
 			return;
 		}
-		kPrintf("Move fail\n");
+		kPrintf("Copy fail\n");
 		return;
 	}
 	else
@@ -1879,12 +1882,9 @@ static void copy(const char* pcParameterBuffer)
 		kCdDir("..");
 		kPrintf("kCloseDir complete\n");
 
-		//kDeleteFileInRootDirectory(vcFileName);
-		//kPrintf("Move Success\n");
-
 		return;
 	}
-	kPrintf("Move fail\n");
+	kPrintf("Copy fail\n");
 
 	return;
 }
