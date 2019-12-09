@@ -8,6 +8,7 @@
 #include "RTC.h"
 #include "AssemblyUtility.h"
 #include "Task.h"
+#include "TaskService.h"
 #include "Synchronization.h"
 #include "InterruptHandler.h"
 #include "DynamicMemory.h"
