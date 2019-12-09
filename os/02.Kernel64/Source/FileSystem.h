@@ -160,7 +160,7 @@ BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry 
 BOOL kGetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* pstEntry );
 int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry );
 void kGetFileSystemInformation( FILESYSTEMMANAGER* pstManager );
-
+int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry);
 
 FILE* kOpenFile( const char* pcFileName, const char* pcMode );
 DWORD kReadFile( void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFile );

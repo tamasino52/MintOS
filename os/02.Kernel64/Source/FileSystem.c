@@ -402,6 +402,36 @@ int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry )
     	return -1;
 }
 
+int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry)
+{
+	DIRECTORYENTRY* pstRootEntry;
+	int i;
+	int iLength;
+
+	if (gs_stFileSystemManager.bMounted == FALSE)
+	{
+		return -1;
+	}
+
+	if (kReadCluster(gs_stFileSystemManager.pstDirIndex, gs_vbTempBuffer) == FALSE)
+	{
+		return -1;
+	}
+
+	iLength = kStrLen(pcFileName);
+	pstRootEntry = (DIRECTORYENTRY*)gs_vbTempBuffer;
+	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
+	{
+		if (pstRootEntry[i].dwStartClusterIndex == dirIndex) )
+		{
+			kMemCpy(pstEntry, pstRootEntry + i, sizeof(DIRECTORYENTRY));
+			return i;
+		}
+	}
+	return -1;
+}
+
+
 void kGetFileSystemInformation( FILESYSTEMMANAGER* pstManager )
 {
     	kMemCpy( pstManager, &gs_stFileSystemManager, sizeof( gs_stFileSystemManager ) );
@@ -1344,7 +1374,8 @@ int kRemoveAllFile( int dirIndex )
 int kCloseDir( void )
 {
 	DIRECTORYENTRY dotDotEntry;    	
-    kLock( &( gs_stFileSystemManager.stMutex ) );
+
+    	kLock( &( gs_stFileSystemManager.stMutex ) );
 	if( kGetDirectoryEntryData( gs_stFileSystemManager.pstDirIndex , 1, &dotDotEntry) == FALSE )
 	{
 		kUnlock( &( gs_stFileSystemManager.stMutex ) );
@@ -1356,7 +1387,7 @@ int kCloseDir( void )
 	kMemSet( gs_stFileSystemManager.dirRootName, ' ' , kStrLen( gs_stFileSystemManager.dirRootName ) );
 	kMemCpy( gs_stFileSystemManager.dirRootName, dotDotEntry.vcFileName, kStrLen( dotDotEntry.vcFileName ) + 1 );
     
-    kUnlock( &( gs_stFileSystemManager.stMutex ) );
+    	kUnlock( &( gs_stFileSystemManager.stMutex ) );
 
     	return 0;
 }
