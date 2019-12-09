@@ -1900,16 +1900,6 @@ static void rename(const char* pcParameterBuffer)
 	kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
 	pstEntry->vcFileName[iLength] = "\0";
 
-	pstFile = fopen(vcFileName, "w");
-	kMemCpy(pstFile->stDirectoryHandle.pstDirectoryBuffer->vcFileName, vcNewFileName, iLength);
-	pstFile->stDirectoryHandle.pstDirectoryBuffer->vcFileName[iLength] = "\0";
-
-
-	if (kUpdateDirectoryEntry(&(pstFile->stDirectoryHandle)) == FALSE)
-	{
-		kPrintf("%s", "Update fail");
-	}
-	fclose(pstFile);
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)
