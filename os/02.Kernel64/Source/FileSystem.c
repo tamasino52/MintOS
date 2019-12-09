@@ -1137,62 +1137,6 @@ int kRenameFile(const char* pcFileName, const char* pcNewFileName)
 	return 0;
 }
 
-int kMoveFile(const char* pcFileName, const char* pDirectoryName)
-{
-	DIRECTORYENTRY stEntry;
-	int pstDirIndex;
-	int iDirectoryEntryOffset;
-	int iFileNameLength;
-	int iDirectoryNameLength;
-
-	iFileNameLength = kStrLen(pcFileName);
-	if ((iFileNameLength > (sizeof(stEntry.vcFileName) - 1)) ||
-		(iFileNameLength == 0))
-	{
-		return NULL;
-	}
-
-	iDirectoryNameLength = kStrLen(pDirectoryName);
-	if ((iDirectoryNameLength > (sizeof(stEntry.vcFileName) - 1)) ||
-		(iDirectoryNameLength == 0))
-	{
-		return NULL;
-	}
-
-	kLock(&(gs_stFileSystemManager.stMutex));
-
-	iDirectoryEntryOffset = kFindDirectoryEntry(pcFileName, &stEntry);
-
-	if (iDirectoryEntryOffset == -1)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-	pstDirIndex = stEntry.dirClusterIndex;
-	if (kIsFileOpened(&stEntry) == TRUE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	if (kFreeClusterUntilEnd(stEntry.dwStartClusterIndex) == FALSE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	kMemCpy(&stEntry.vcFileName, pcNewFileName, iNewFileNameLength + 1);
-
-	if (kSetDirectoryEntryData(pstDirIndex, iDirectoryEntryOffset, &stEntry) == FALSE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	kUnlock(&(gs_stFileSystemManager.stMutex));
-	return 0;
-}
-
 DIR* kOpenDirectory( void )
 {
     	DIR* pstDirectory;
