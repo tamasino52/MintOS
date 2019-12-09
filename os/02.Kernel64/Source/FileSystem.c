@@ -328,7 +328,7 @@ int kFindFreeDirectoryEntry( void )
     	return -1;
 }
 
-static BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry )
+ BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry )
 {
    	DIRECTORYENTRY* pstDirEntry;
     
