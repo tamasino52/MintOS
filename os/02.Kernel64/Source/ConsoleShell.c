@@ -1824,7 +1824,7 @@ static void move(const char* pcParameterBuffer) {
 	kInitializeParameter(&stList, pcParameterBuffer);
 	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
-	kRemoveFile(vcFileName);
+	krmDir(vcFileName);
 
 }
 
