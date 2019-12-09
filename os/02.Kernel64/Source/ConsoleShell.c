@@ -1887,11 +1887,11 @@ static void rename(const char* pcParameterBuffer)
 	{
 		pstEntry = readdir(pstDirectory, i);
 
-		if (kMemCmp(pstEntry.vcFileName, vcFileName, iLength) == 0)
+		if (kMemCmp(pstEntry->vcFileName, vcFileName, iLength) == 0)
 		{
 			//kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
-			kMemCpy(pstEntry.vcFileName, vcNewFileName, iNewNameLength);
-			pstEntry.vcFileName[iNewNameLength] = "\0";
+			kMemCpy(pstEntry->vcFileName, vcNewFileName, iNewNameLength);
+			pstEntry->vcFileName[iNewNameLength] = "\0";
 			kPrintf("Success rename\n");
 			return;
 		}
