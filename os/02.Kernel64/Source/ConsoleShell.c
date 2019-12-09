@@ -1861,7 +1861,6 @@ static void rename(const char* pcParameterBuffer)
 	int iLength, iNewNameLength;
 	DWORD dwCluster;
 	struct dirent* pstEntry;
-	DIRECTORYENTRY *pstEntry;
 	int i;
 	FILE* pstFile;
 
