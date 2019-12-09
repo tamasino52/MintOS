@@ -1,20 +1,8 @@
-/**
- *  file    ISR.h
- *  date    2009/01/24
- *  author  kkamagui 
- *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   인터럽트 서비스 루틴(ISR) 관련된 헤더 파일
- */
 
 #ifndef __ISR_H__
 #define __ISR_H__
 
-////////////////////////////////////////////////////////////////////////////////
-//
-//  함수
-//
-////////////////////////////////////////////////////////////////////////////////
-// 예외(Exception) 처리용 ISR
+
 void kISRDivideError( void );
 void kISRDebug( void );
 void kISRNMI( void );
@@ -37,7 +25,6 @@ void kISRMachineCheck( void );
 void kISRSIMDError( void );
 void kISRETCException( void );
 
-// 인터럽트(Interrupt) 처리용 ISR
 void kISRTimer( void );
 void kISRKeyboard( void );
 void kISRSlavePIC( void );
