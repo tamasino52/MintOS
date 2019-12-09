@@ -1818,7 +1818,14 @@ static void krmDir(const char* pcParameterBuffer)
 
 static void move(const char* pcParameterBuffer) {
 	copy(pcParameterBuffer);
-	kDeleteFileInRootDirectory(pcParameterBuffer);
+	PARAMETERLIST stList;
+	char vcFileName[50];
+	int iLength;
+	kInitializeParameter(&stList, pcParameterBuffer);
+	iLength = kGetNextParameter(&stList, vcFileName);
+	vcFileName[iLength] = '\0';
+	kRemoveFile(vcFileName);
+
 }
 
 static void copy(const char* pcParameterBuffer)
