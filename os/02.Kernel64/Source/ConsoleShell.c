@@ -1815,14 +1815,15 @@ static void krmDir(const char* pcParameterBuffer)
 }
 static void copy(const char* pcParameterBuffer)
 {
-	///////////////////////////////////
 	PARAMETERLIST stList;
 	char vcFileName[50];
 	char vcdir[50];
+	char vcOlddir[50];
 	int iLength;
 	DWORD dwCluster;
 	DIRECTORYENTRY stEntry;
-	int i;
+	DIRECTORYENTRY* pstEmptyEntry;
+	int iFileOffset;
 	FILE* pstFile;
 
 	kInitializeParameter(&stList, pcParameterBuffer);
@@ -1837,29 +1838,49 @@ static void copy(const char* pcParameterBuffer)
 		return;
 	}
 
+	iFileOffset = kFindDirectoryEntry(vcFileName, &stEntry);
+	
 	if (kMemCmp(vcdir, "..", 2) == 0)
 	{
-		pstFile = kOpenFile(vcFileName, "w");
-		fclose(pstFile);
+		DIR* dirStart = kOpenDirectory();
+		kMemCpy(vcOlddir, dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName, kStrLen(dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName));
+		if (kCloseDir() == 0)
+		{
+			int iFreeIndex = kFindFreeDirectoryEntry();
+			kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 
-		pstFile->stFileHandle.dirClusterIndex = 0;
-
-		kPrintf("test\n");
-		kPrintf(" %d", gs_stFileSystemManager.pstDirIndex);
+			kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
+			kCdDir(vcOlddir);
+			remove(vcFileName);
+			kPrintf("Move Success\n");
+			return;
+		}
+		kPrintf("Move fail\n");
 		return;
 	}
+	else
+	{
+		kCdDir(vcdir);
+		int iFreeIndex = kFindFreeDirectoryEntry();
+		kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
+		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
+		kCloseDir();
+		remove(vcFileName);
+		kPrintf("Move Success\n");
+
+		return;
+	}
+	kPrintf("Move fail\n");
+
 	return;
 }
 
 static void rename(const char* pcParameterBuffer)
 {
-	DIR* pstDirectory;
 	PARAMETERLIST stList;
 	char vcFileName[50];
 	char vcNewFileName[50];
 	int iLength, iNewNameLength;
-
-	pstDirectory = opendir();
 
 	kInitializeParameter(&stList, pcParameterBuffer);
 	iLength = kGetNextParameter(&stList, vcFileName);
@@ -1876,6 +1897,7 @@ static void rename(const char* pcParameterBuffer)
 	}
 	return;
 }
+
 static void kTestFileIO(const char* pcParameterBuffer)
 {
 	FILE* pstFile;
