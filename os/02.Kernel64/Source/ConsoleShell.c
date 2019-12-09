@@ -1861,11 +1861,20 @@ static void copy(const char* pcParameterBuffer)
 	else
 	{
 		kCdDir(vcdir);
+		kPrintf("cdDir complete\n");
 		iFreeIndex = kFindFreeDirectoryEntry();
+		kPrintf("kFindFreeDirectory Complete\n");
 		kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
+		kPrintf("kGetDirectoryEntryData complete\n");
 		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
+		kPrintf("kMemCpy complete\n");
+
 		kCloseDir();
+		kPrintf("kCloseDir complete\n");
+
 		remove(vcFileName);
+		kPrintf("remove complete\n");
+
 		kPrintf("Move Success\n");
 
 		return;
