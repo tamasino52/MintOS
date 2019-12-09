@@ -1,9 +1,20 @@
-
+/**
+ *  file    Types.h
+ *  date    2008/12/14
+ *  author  kkamagui 
+ *          Copyright(c)2008 All rights reserved by kkamagui
+ *  brief   커널에서 사용하는 각종 타입을 정의한 파일
+ */
 
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-
+////////////////////////////////////////////////////////////////////////////////
+//
+// 매크로
+//
+////////////////////////////////////////////////////////////////////////////////
+// 기본 타입 관련 매크로
 #define BYTE    unsigned char
 #define WORD    unsigned short
 #define DWORD   unsigned int
@@ -14,11 +25,17 @@
 #define FALSE   0
 #define NULL    0
 
+// stddef.h 헤더에 포함된 offsetof() 매크로의 내용
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// 구조체
+//
+////////////////////////////////////////////////////////////////////////////////
 #pragma pack( push, 1 )
 
-
+// 비디오 모드 중 텍스트 모드 화면을 구성하는 자료구조
 typedef struct kCharactorStruct
 {
     BYTE bCharactor;
@@ -26,7 +43,5 @@ typedef struct kCharactorStruct
 } CHARACTER;
 
 #pragma pack( pop )
-
-void kPrintString( int iX, int iY, const char* pcString );
 
 #endif /*__TYPES_H__*/
