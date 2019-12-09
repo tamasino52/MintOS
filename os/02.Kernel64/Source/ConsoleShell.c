@@ -1905,7 +1905,7 @@ static void rename(const char* pcParameterBuffer)
 	{
 		kPrintf("%s", "Update fail");
 	}
-	fclose(vcFileNewName);
+	fclose(pstFile);
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)
