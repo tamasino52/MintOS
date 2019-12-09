@@ -1870,8 +1870,11 @@ static void copy(const char* pcParameterBuffer)
 		iFreeIndex = kFindFreeDirectoryEntry();
 		kPrintf("kGetDirectoryEntryData complete\n");
 
-		kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, &stEntry);
-		kPrintf("kMemCpy complete\n");
+		if (kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, &stEntry) == FALSE) {
+			kPrintf("kSetDirectoryEntryData fail\n");
+			return;
+		}
+		kPrintf("kSetDirectoryEntryData complete\n");
 
 		kCdDir("..");
 		kPrintf("kCloseDir complete\n");
