@@ -1871,20 +1871,14 @@ static void rename(const char* pcParameterBuffer)
 	vcFileName[iLength] = '\0';
 
 	iNewNameLength = kGetNextParameter(&stList, vcNewFileName);
-	vcNewFileName[iLength] = '\0';
+	vcNewFileName[iNewNameLength] = '\0';
 
-	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
-	{
-		pstEntry = readdir(pstDirectory, i);
-
-		if (kMemCmp(pstEntry->vcFileName, vcFileName, iLength) == 0)
-		{
-			kMemCpy(pstEntry->vcFileName, vcNewFileName, iNewNameLength+1);
-			kPrintf("Success rename\n");
-			return;
-		}
+	if (kRenameFile(vcFileName, vcNewFileName) == 0) {
+		kPrintf("Success rename\n");
 	}
-	kPrintf("Rename fail\n");
+	else {
+		kPrintf("Rename fail\n");
+	}
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)

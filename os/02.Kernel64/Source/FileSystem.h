@@ -168,6 +168,7 @@ DWORD kWriteFile( const void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFi
 int kSeekFile( FILE* pstFile, int iOffset, int iOrigin );
 int kCloseFile( FILE* pstFile );
 int kRemoveFile( const char* pcFileName );
+int kRenameFile(const char* pcFileName, const char* pcNewFileName);
 DIR* kOpenDirectory( void );
 struct kDirectoryEntryStruct* kReadDirectory( DIR* pstDirectory, int* offset );
 void kRewindDirectory( DIR* pstDirectory );

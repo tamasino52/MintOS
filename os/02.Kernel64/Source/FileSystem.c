@@ -1089,6 +1089,53 @@ int kRemoveFile( const char* pcFileName )
     	return 0;
 }
 
+int kRenameFile(const char* pcFileName, const char* pcNewFileName)
+{
+	DIRECTORYENTRY stEntry;
+	int pstDirIndex;
+	int iDirectoryEntryOffset;
+	int iFileNameLength, iNewFileNameLength;
+	iNewFileNameLength = kStrLen(pcNewFileName);
+	iFileNameLength = kStrLen(pcFileName);
+	if ((iFileNameLength > (sizeof(stEntry.vcFileName) - 1)) ||
+		(iFileNameLength == 0))
+	{
+		return NULL;
+	}
+
+	kLock(&(gs_stFileSystemManager.stMutex));
+
+	iDirectoryEntryOffset = kFindDirectoryEntry(pcFileName, &stEntry);
+	if (iDirectoryEntryOffset == -1)
+	{
+		kUnlock(&(gs_stFileSystemManager.stMutex));
+		return -1;
+	}
+	pstDirIndex = stEntry.dirClusterIndex;
+	if (kIsFileOpened(&stEntry) == TRUE)
+	{
+		kUnlock(&(gs_stFileSystemManager.stMutex));
+		return -1;
+	}
+
+	if (kFreeClusterUntilEnd(stEntry.dwStartClusterIndex) == FALSE)
+	{
+		kUnlock(&(gs_stFileSystemManager.stMutex));
+		return -1;
+	}
+
+	kMemCpy(&stEntry.vcFileName, pcNewFileName, iNewFileNameLength + 1);
+	
+	if (kSetDirectoryEntryData(pstDirIndex, iDirectoryEntryOffset, &stEntry) == FALSE)
+	{
+		kUnlock(&(gs_stFileSystemManager.stMutex));
+		return -1;
+	}
+
+	kUnlock(&(gs_stFileSystemManager.stMutex));
+	return 0;
+}
+
 DIR* kOpenDirectory( void )
 {
     	DIR* pstDirectory;
