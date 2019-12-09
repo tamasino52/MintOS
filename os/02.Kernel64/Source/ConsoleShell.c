@@ -1841,6 +1841,7 @@ static void copy(const char* pcParameterBuffer)
 
 	iFileOffset = kFindDirectoryEntry(vcFileName, &stEntry);
 	
+
 	if (kMemCmp(vcdir, "..", 2) == 0)
 	{
 		DIR* dirStart = kOpenDirectory();
@@ -1869,9 +1870,11 @@ static void copy(const char* pcParameterBuffer)
 		kPrintf("kFindFreeDirectory Complete\n");
 		kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 		kPrintf("kGetDirectoryEntryData complete\n");
-		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
-		pstEmptyEntry->dirClusterIndex = iFreeIndex;
 
+		if (kSetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, &stEntry) == FALSE) {
+			kPrintf("Copy fail\n");
+			return;
+		}
 		kPrintf("kMemCpy complete\n");
 
 		kCdDir("..");
