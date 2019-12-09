@@ -1862,7 +1862,7 @@ static void rename(const char* pcParameterBuffer)
 	int iLength;
 	DWORD dwCluster;
 	struct dirent* stEntry;
-	DIRECTORYENTRY* pstEntry, pstDirEntry, gs_vbTempBuffer;
+	DIRECTORYENTRY *pstEntry, *pstDirEntry, *gs_vbTempBuffer;
 	int i;
 	FILE* pstFile;
 
