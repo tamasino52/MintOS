@@ -1872,8 +1872,8 @@ static void copy(const char* pcParameterBuffer)
 		kCdDir("..");
 		kPrintf("kCloseDir complete\n");
 
-		kRemoveFile(vcFileName);
-		kPrintf("remove complete\n");
+		//kRemoveFile(vcFileName);
+		//kPrintf("remove complete\n");
 
 		kPrintf("Move Success\n");
 
