@@ -1813,6 +1813,7 @@ static void krmDir(const char* pcParameterBuffer)
 
 	kPrintf("Dir delete Success\n");
 }
+
 static void copy(const char* pcParameterBuffer)
 {
 	PARAMETERLIST stList;
@@ -1850,6 +1851,8 @@ static void copy(const char* pcParameterBuffer)
 			kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 
 			kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
+			pstEmptyEntry->dirClusterIndex = iFreeIndex;
+
 			kCdDir(vcOlddir);
 			kRemoveFile(vcFileName);
 			kPrintf("Move Success\n");
@@ -1867,13 +1870,14 @@ static void copy(const char* pcParameterBuffer)
 		kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 		kPrintf("kGetDirectoryEntryData complete\n");
 		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
+		pstEmptyEntry->dirClusterIndex = iFreeIndex;
+
 		kPrintf("kMemCpy complete\n");
 
 		kCdDir("..");
 		kPrintf("kCloseDir complete\n");
 
-		//kRemoveFile(vcFileName);
-		//kPrintf("remove complete\n");
+		kRemoveFile(vcFileName);
 
 		kPrintf("Move Success\n");
 
