@@ -1823,7 +1823,7 @@ static void copy(const char* pcParameterBuffer)
 	DWORD dwCluster;
 	DIRECTORYENTRY stEntry;
 	DIRECTORYENTRY* pstEmptyEntry;
-	int iFileOffset;
+	int iFileOffset, iFreeIndex;
 	FILE* pstFile;
 
 	kInitializeParameter(&stList, pcParameterBuffer);
@@ -1846,7 +1846,7 @@ static void copy(const char* pcParameterBuffer)
 		kMemCpy(vcOlddir, dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName, kStrLen(dirStart->stDirectoryHandle.pstDirectoryBuffer->vcFileName));
 		if (kCloseDir() == 0)
 		{
-			int iFreeIndex = kFindFreeDirectoryEntry();
+			iFreeIndex = kFindFreeDirectoryEntry();
 			kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 
 			kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
@@ -1861,7 +1861,7 @@ static void copy(const char* pcParameterBuffer)
 	else
 	{
 		kCdDir(vcdir);
-		int iFreeIndex = kFindFreeDirectoryEntry();
+		iFreeIndex = kFindFreeDirectoryEntry();
 		kGetDirectoryEntryData(gs_stFileSystemManager.pstDirIndex, iFreeIndex, pstEmptyEntry);
 		kMemCpy(pstEmptyEntry, &stEntry, sizeof(DIRECTORYENTRY));
 		kCloseDir();
