@@ -519,7 +519,7 @@ static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry
     }
 
     // 루트 디렉터리를 읽음
-    if( kReadCluster(gs_stFileSystemManager.pstDirIndex, gs_vbTempBuffer ) == FALSE )
+    if( kReadCluster(0, gs_vbTempBuffer ) == FALSE )
     {
         return -1;
     }
@@ -532,10 +532,10 @@ static int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry
         if( kMemCmp( pstRootEntry[ i ].vcFileName, pcFileName, iLength ) == 0 )
         {
             kMemCpy( pstEntry, pstRootEntry + i, sizeof( DIRECTORYENTRY ) );
-            return i;
-        }
+			return i;
+		}
     }
-    return -2;
+    return -1;
 }
 
 /**
@@ -626,10 +626,6 @@ int kOpenDir( const char* pcDirectoryName )
 	{
 		kUnlock( &(gs_stFileSystemManager.stMutex) );
 		return -1;
-	}
-	else {
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -2;
 	}
 
 	if( kGetDirectoryEntryData( dirEntry.dwStartClusterIndex, 0, &dotEntry )==FALSE )
