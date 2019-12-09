@@ -1887,9 +1887,9 @@ static void rename(const char* pcParameterBuffer)
 	{
 		if (kMemCmp(pstDirEntry[i].vcFileName, vcFileName, iLength) == 0)
 		{
-			kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
-			kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
-			pstEntry->vcFileName[iLength] = "\0";
+			//kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
+			kMemCpy(pstDirEntry[i].vcFileName, vcNewFileName, iLength);
+			pstDirEntry[i].vcFileName[iLength] = "\0";
 			kPrintf("Success rename\n");
 			return;
 		}
