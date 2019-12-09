@@ -1870,17 +1870,8 @@ static void rename(const char* pcParameterBuffer)
 	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
 
-	iLength = kGetNextParameter(&stList, vcNewFileName);
+	iNewNameLength = kGetNextParameter(&stList, vcNewFileName);
 	vcNewFileName[iLength] = '\0';
-
-	if ((iLength > (FILESYSTEM_MAXFILENAMELENGTH - 1)) || (iLength == 0))
-	{
-		kPrintf("Too Long or Too Short File Name\n");
-		return;
-	}
-
-	iLength = kStrLen(vcFileName);
-	iNewNameLength = kStrLen(vcNewFileName);
 
 	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
 	{
@@ -1888,9 +1879,7 @@ static void rename(const char* pcParameterBuffer)
 
 		if (kMemCmp(pstEntry->vcFileName, vcFileName, iLength) == 0)
 		{
-			//kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
-			kMemCpy(pstEntry->vcFileName, vcNewFileName, iNewNameLength);
-			pstEntry->vcFileName[iNewNameLength] = "\0";
+			kMemCpy(pstEntry->vcFileName, vcNewFileName, iNewNameLength+1);
 			kPrintf("Success rename\n");
 			return;
 		}
