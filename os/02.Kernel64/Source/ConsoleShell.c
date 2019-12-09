@@ -1860,8 +1860,8 @@ static void rename(const char* pcParameterBuffer)
 	char vctmp[50];
 	int iLength, iNewNameLength;
 	DWORD dwCluster;
-	struct dirent* stEntry;
-	DIRECTORYENTRY *pstEntry, *pstDirEntry;
+	struct dirent* pstEntry;
+	DIRECTORYENTRY *pstEntry;
 	int i;
 	FILE* pstFile;
 
@@ -1882,14 +1882,16 @@ static void rename(const char* pcParameterBuffer)
 
 	iLength = kStrLen(vcFileName);
 	iNewNameLength = kStrLen(vcNewFileName);
-	pstDirEntry = (DIRECTORYENTRY*)pstDirectory->stDirectoryHandle.pstDirectoryBuffer;
+
 	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
 	{
-		if (kMemCmp(pstDirEntry[i].vcFileName, vcFileName, iLength) == 0)
+		pstEntry = readdir(pstDirectory, i);
+
+		if (kMemCmp(pstEntry.vcFileName, vcFileName, iLength) == 0)
 		{
 			//kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
-			kMemCpy(pstDirEntry[i].vcFileName, vcNewFileName, iNewNameLength);
-			pstDirEntry[i].vcFileName[iNewNameLength] = "\0";
+			kMemCpy(pstEntry.vcFileName, vcNewFileName, iNewNameLength);
+			pstEntry.vcFileName[iNewNameLength] = "\0";
 			kPrintf("Success rename\n");
 			return;
 		}
