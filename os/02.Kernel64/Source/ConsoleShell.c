@@ -1890,10 +1890,11 @@ static void rename(const char* pcParameterBuffer)
 			kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
 			kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
 			pstEntry->vcFileName[iLength] = "\0";
-			kPrintf("Success rename");
+			kPrintf("Success rename\n");
+			return;
 		}
 	}
-	kPrintf("Rename fail");
+	kPrintf("Rename fail\n");
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)
