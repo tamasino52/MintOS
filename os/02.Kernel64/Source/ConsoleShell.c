@@ -1854,7 +1854,6 @@ static void copy(const char* pcParameterBuffer)
 static void rename(const char* pcParameterBuffer)
 {
 	DIR* pstDirectory;
-
 	PARAMETERLIST stList;
 	char vcFileName[50];
 	char vcNewFileName[50];
@@ -1862,12 +1861,12 @@ static void rename(const char* pcParameterBuffer)
 	int iLength;
 	DWORD dwCluster;
 	struct dirent* stEntry;
-	DIRECTORYENTRY *pstEntry, *pstDirEntry, *gs_vbTempBuffer;
+	DIRECTORYENTRY *pstEntry, *pstDirEntry;
 	int i;
 	FILE* pstFile;
 
-	int tmp;
 	pstDirectory = opendir();
+
 	kInitializeParameter(&stList, pcParameterBuffer);
 	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
@@ -1887,19 +1886,19 @@ static void rename(const char* pcParameterBuffer)
 	}
 
 	iLength = kStrLen(vcFileName);
-	pstDirEntry = (DIRECTORYENTRY*)gs_vbTempBuffer;
+
+	pstDirEntry = (DIRECTORYENTRY*)pstDirectory->stDirectoryHandle.pstDirectoryBuffer;
 	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
 	{
 		if (kMemCmp(pstDirEntry[i].vcFileName, vcFileName, iLength) == 0)
 		{
 			kMemCpy(pstEntry, pstDirEntry + i, sizeof(DIRECTORYENTRY));
+			kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
+			pstEntry->vcFileName[iLength] = "\0";
+			kPrintf("Success rename")
 		}
 	}
-
-	iLength = kStrLen(vcNewFileName);
-	kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
-	pstEntry->vcFileName[iLength] = "\0";
-
+	kPrintf("Rename fail")
 	return;
 }
 static void kTestFileIO(const char* pcParameterBuffer)
