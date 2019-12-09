@@ -1896,10 +1896,14 @@ static void rename(const char* pcParameterBuffer)
 		}
 	}
 
-	pstEntry->vcFileName = vcNewFileName;
+	iLength = kStrLen(vcNewFileName);
+	kMemCpy(pstEntry->vcFileName, vcNewFileName, iLength);
+	pstEntry->vcFileName[iLength] = "\0";
 
 	pstFile = fopen(vcFileName, "w");
-	pstFile->stDirectoryHandle.pstDirectoryBuffer->vcFileName = vcNewFileName;
+	kMemCpy(pstFile->stDirectoryHandle.pstDirectoryBuffer->vcFileName, vcNewFileName, iLength);
+	pstFile->stDirectoryHandle.pstDirectoryBuffer->vcFileName[iLength] = "\0";
+
 
 	if (kUpdateDirectoryEntry(&(pstFile->stDirectoryHandle)) == FALSE)
 	{
