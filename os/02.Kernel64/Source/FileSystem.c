@@ -418,11 +418,10 @@ int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry)
 		return -1;
 	}
 
-	iLength = kStrLen(pcFileName);
 	pstRootEntry = (DIRECTORYENTRY*)gs_vbTempBuffer;
 	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
 	{
-		if (pstRootEntry[i].dwStartClusterIndex == dirIndex) )
+		if (pstRootEntry[i].dwStartClusterIndex == dirIndex)
 		{
 			kMemCpy(pstEntry, pstRootEntry + i, sizeof(DIRECTORYENTRY));
 			return i;
