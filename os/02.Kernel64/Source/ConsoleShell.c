@@ -1742,10 +1742,11 @@ static void kCdDir(const char* pcParameterBuffer)
 		kPrintf("Full path access\n");
 		iLength = 1;
 		iPathLength = 0;
-		//먼저 루트디렉토리로 이동
 		iThr = 0;
+		//먼저 루트디렉토리로 이동
 		do {
-			if (iThr++ > 100) {
+			// 100회 이상 같은 동작을 반복한다면 오류로 판단해 작동 중지
+			if (iThr++ > 100) { 
 				break;
 			}
 			if (kCloseDir() == -1)
@@ -1754,10 +1755,16 @@ static void kCdDir(const char* pcParameterBuffer)
 				break;
 			}
 		} while (gs_stFileSystemManager.pstDirIndex != 0);
-		kPrintf("Root directory access\n");
+
+		// 루트디렉토리로만 이동하고 끝낼 경우 여기서 걸러짐
+		if (vcFileName[1] == '\0') {
+			kPrintf("Root Directory Access");
+			return;
+		}
 
 		while (1)
 		{
+			// '/' 가 검출되면 vcPathName에 여태까지 쓴 경로로 이동
 			if (vcFileName[iLength] == '/')
 			{
 				vcPathName[iPathLength] = '\0';
@@ -1772,7 +1779,7 @@ static void kCdDir(const char* pcParameterBuffer)
 				iLength++;
 			}
 			else if (vcFileName[iLength] == '\0')
-			{
+			{ // '\0' 가 검출되면 vcPathName에 여태까지 쓴 경로로 이동 후 종료
 				vcPathName[iPathLength] = '\0';
 				kPrintf(vcPathName);
 				kPrintf("\n");
@@ -1783,7 +1790,7 @@ static void kCdDir(const char* pcParameterBuffer)
 				kPrintf("Arrive correct path\n");
 				return;
 			}
-			else
+			else // vcPathName 버퍼에 vcFileName의 경로 정보를 하나씩 담음
 			{
 				kPrintf("Length : %d / %d\n", iPathLength, iLength);
 				vcPathName[iPathLength++] = vcFileName[iLength++];
@@ -1802,7 +1809,7 @@ static void kCdDir(const char* pcParameterBuffer)
 	{
 		if (kCloseDir() == 0)
 		{
-			kPrintf("RootDir Open Success\n");
+			kPrintf("Parent Dir Open Success\n");
 			return;
 		}
 		kPrintf("Parent Dir Fail\n");
