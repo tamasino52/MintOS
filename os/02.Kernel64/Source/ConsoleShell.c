@@ -1751,14 +1751,13 @@ static void kCdDir(const char* pcParameterBuffer)
 			if (iThr++ > 100) {
 				break;
 			}
-			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
 			if (kCloseDir() == -1)
 			{
 				kPrintf("Root directory access fail\n");
 				break;
 			}
-			kPrintf("Directory index : %d, %d", gs_stFileSystemManager.pstDirIndex, iCurrentDirIndex);
 		} while (gs_stFileSystemManager.pstDirIndex != 0);
+		kPrintf("Root directory access\n");
 
 		while (1)
 		{
@@ -1780,10 +1779,12 @@ static void kCdDir(const char* pcParameterBuffer)
 					kPrintf("Wrong path error\n");
 						return;
 				}
+				kPrintf("Arrive correct path\n");
 				return;
 			}
 			else
 			{
+				kPrintf("Length : %d / %d\n", iPathLength, iLength);
 				vcPathName[iPathLength++] = vcFileName[iLength++];
 			}
 		}
