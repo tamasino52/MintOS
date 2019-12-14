@@ -62,10 +62,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "testfileio", "Test File I/O Function", kTestFileIO },
 	{ "cd", "cd", kCdDir },
 	{ "makedir","make dir", kMakeDir },
-	{ "rmdir", "remove dir" , krmDir },
-	{ "cp","copy",copy},   //cp command
-	{ "mv","move",move},   //mv command
-	{"rename","rename",rename},//rename command  follow function
+	{ "rmdir", "remove dir" , krmDir }
 };
 
 void kStartConsoleShell(void)
