@@ -1,3 +1,10 @@
+/**
+ *  file    Utility.h
+ *  date    2009/01/17
+ *  author  kkamagui 
+ *          Copyright(c)2008 All rights reserved by kkamagui
+ *  brief   OS에서 사용할 유틸리티 함수에 관련된 파일
+ */
 
 #ifndef __UTILITY_H__
 #define __UTILITY_H__
@@ -5,10 +12,19 @@
 #include <stdarg.h>
 #include "Types.h"
 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  매크로
+//
+////////////////////////////////////////////////////////////////////////////////
 #define MIN( x, y )     ( ( ( x ) < ( y ) ) ? ( x ) : ( y ) )
 #define MAX( x, y )     ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
 
-
+////////////////////////////////////////////////////////////////////////////////
+//
+//  함수
+//
+////////////////////////////////////////////////////////////////////////////////
 void kMemSet( void* pvDestination, BYTE bData, int iSize );
 int kMemCpy( void* pvDestination, const void* pvSource, int iSize );
 int kMemCmp( const void* pvDestination, const void* pvSource, int iSize );
@@ -27,9 +43,11 @@ int kVSPrintf( char* pcBuffer, const char* pcFormatString, va_list ap );
 QWORD kGetTickCount( void );
 void kSleep( QWORD qwMillisecond );
 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  기타
+//
+////////////////////////////////////////////////////////////////////////////////
 extern volatile QWORD g_qwTickCount;
-volatile int timeCounter;
-volatile int timerON;
-
 
 #endif /*__UTILITY_H__*/
