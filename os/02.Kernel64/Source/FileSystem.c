@@ -402,6 +402,7 @@ int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry )
     	return -1;
 }
 
+// 디렉토리 인덱스로 찾는 함수
 int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry)
 {
 	DIRECTORYENTRY* pstRootEntry;
