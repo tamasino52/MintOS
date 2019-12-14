@@ -1741,6 +1741,7 @@ static void kCdDir(const char* pcParameterBuffer)
 
 	//절대경로처리
 	if (kMemCmp(vcFileName, "/", 1) == 0) {
+		kPrintf("Full path access\n");
 		iLength = 1;
 		iPathLength = 0;
 		//먼저 루트디렉토리로 이동
