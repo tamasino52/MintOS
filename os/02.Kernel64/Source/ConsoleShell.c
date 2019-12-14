@@ -1727,6 +1727,7 @@ static void kCdDir(const char* pcParameterBuffer)
 	DIRECTORYENTRY stEntry;
 	int i;
 	int iCurrentDirIndex;
+	int iThr;
 	FILE* pstFile;
 
 	kInitializeParameter(&stList, pcParameterBuffer);
@@ -1745,7 +1746,11 @@ static void kCdDir(const char* pcParameterBuffer)
 		iLength = 1;
 		iPathLength = 0;
 		//먼저 루트디렉토리로 이동
+		iThr = 0;
 		do {
+			if (iThr++ > 100) {
+				break
+			}
 			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
 			if (kCloseDir() == -1)
 			{
