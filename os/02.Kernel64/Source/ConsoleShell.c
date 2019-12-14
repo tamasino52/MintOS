@@ -1761,7 +1761,7 @@ static void kCdDir(const char* pcParameterBuffer)
 
 		while (1)
 		{
-			if (vcFileName[iLength] == '//')
+			if (vcFileName[iLength] == '/')
 			{
 				vcPathName[iPathLength] = '\0';
 				kPrintf(vcPathName);
