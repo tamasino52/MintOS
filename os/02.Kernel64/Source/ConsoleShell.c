@@ -1761,9 +1761,9 @@ static void kCdDir(const char* pcParameterBuffer)
 
 		while (1)
 		{
-			if (vcFileName[iLength] == "/")
+			if (vcFileName[iLength] == '//')
 			{
-				vcPathName[iPathLength] = "\0";
+				vcPathName[iPathLength] = '\0';
 				if (kOpenDir(vcPathName) == -1) {
 					kPrintf("Wrong path error\n");
 						return;
@@ -1772,9 +1772,9 @@ static void kCdDir(const char* pcParameterBuffer)
 				iPathLength = 0;
 				iLength++;
 			}
-			else if (vcFileName[iLength] == "\0")
+			else if (vcFileName[iLength] == '\0')
 			{
-				vcPathName[iPathLength] = "\0";
+				vcPathName[iPathLength] = '\0';
 				if (kOpenDir(vcPathName) == -1) {
 					kPrintf("Wrong path error\n");
 						return;
