@@ -1754,11 +1754,11 @@ static void kCdDir(const char* pcParameterBuffer)
 			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
 			if (kCloseDir() == -1)
 			{
-				kPrintf("Root directory access complete\n");
+				kPrintf("Root directory access fail\n");
 				break;
 			}
 			kPrintf("Directory index : %d, %d", gs_stFileSystemManager.pstDirIndex, iCurrentDirIndex);
-		} while (iCurrentDirIndex != gs_stFileSystemManager.pstDirIndex);
+		} while (gs_stFileSystemManager.pstDirIndex != 0);
 
 		while (1)
 		{
