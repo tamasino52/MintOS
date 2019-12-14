@@ -1749,7 +1749,7 @@ static void kCdDir(const char* pcParameterBuffer)
 		iThr = 0;
 		do {
 			if (iThr++ > 100) {
-				break
+				break;
 			}
 			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
 			if (kCloseDir() == -1)
