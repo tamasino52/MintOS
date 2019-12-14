@@ -1764,6 +1764,7 @@ static void kCdDir(const char* pcParameterBuffer)
 			if (vcFileName[iLength] == '//')
 			{
 				vcPathName[iPathLength] = '\0';
+				kPrintf("kOpendir excute %s\n", vcPathName);
 				if (kOpenDir(vcPathName) == -1) {
 					kPrintf("Wrong path error\n");
 						return;
@@ -1775,6 +1776,7 @@ static void kCdDir(const char* pcParameterBuffer)
 			else if (vcFileName[iLength] == '\0')
 			{
 				vcPathName[iPathLength] = '\0';
+				kPrintf("kOpendir excute %s\n", vcPathName);
 				if (kOpenDir(vcPathName) == -1) {
 					kPrintf("Wrong path error\n");
 						return;
