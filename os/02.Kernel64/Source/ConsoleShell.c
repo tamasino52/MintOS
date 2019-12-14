@@ -2177,58 +2177,58 @@ static void kCdDir(const char* pcParameterBuffer)
 	kPrintf("Dir Open Success\n");
 }
 
-static void kMakeDir( const char* pcParameterBuffer )
+static void kMakeDir(const char* pcParameterBuffer)
 {
 	PARAMETERLIST stList;
 	char vcFileName[50];
-	int iLength, i;
+	int iLength;
 	DWORD dwCluster;
 	DIRECTORYENTRY stEntry;
+	int i;
 	FILE* pstFile;
 
-	kInitializeParameter( &stList, pcParameterBuffer );
-	iLength = kGetNextParameter( &stList, vcFileName );
+	kInitializeParameter(&stList, pcParameterBuffer);
+	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
-
-	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength <= 0 ) )
+	if ((iLength > (FILESYSTEM_MAXFILENAMELENGTH - 1)) || (iLength == 0))
 	{
-		kPrintf( "File Name is Long or Short\n" );
+		kPrintf("Too Long or Too Short File Name\n");
 		return;
 	}
 
-	if( kCreateDir( vcFileName ) == FALSE )
+	if (kCreateDir(vcFileName) == FALSE)
 	{
-		kPrintf( "Failed\n" );
+		kPrintf("Dir Fail\n");
 		return;
 	}
 
-	kPrintf( "Make Successed\n" );
+	kPrintf("Dir make Success\n");
 }
 
-static void kRmDir( const char* pcParameterBuffer )
+static void krmDir(const char* pcParameterBuffer)
 {
 	PARAMETERLIST stList;
 	char vcFileName[50];
-	int iLength, i;
+	int iLength;
 	DWORD dwCluster;
 	DIRECTORYENTRY stEntry;
+	int i;
 	FILE* pstFile;
 
-	kInitializeParameter( &stList, pcParameterBuffer );
-	iLength = kGetNextParameter( &stList, vcFileName );
+	kInitializeParameter(&stList, pcParameterBuffer);
+	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
-
-	if( ( iLength >= ( FILESYSTEM_MAXFILENAMELENGTH - 1 ) ) || ( iLength <= 0 ) )
+	if ((iLength > (FILESYSTEM_MAXFILENAMELENGTH - 1)) || (iLength == 0))
 	{
-		kPrintf( "File Name is Long or Short\n" );
+		kPrintf("Too Long or Too Short File Name\n");
 		return;
 	}
 
-	if( kRemoveDir( vcFileName ) == -1 )
+	if (kRemoveDir(vcFileName) == -1)
 	{
-		kPrintf( "Failed\n" );
+		kPrintf("Dir delete Fail\n");
 		return;
 	}
 
-	kPrintf( "Delete Successed\n" );
+	kPrintf("Dir delete Success\n");
 }
