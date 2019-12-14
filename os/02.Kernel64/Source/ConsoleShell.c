@@ -1741,7 +1741,7 @@ static void kCdDir(const char* pcParameterBuffer)
 	}
 
 	//절대경로처리
-	if (kMemCmp(vcFileName, '/', 1) == 0) {
+	if (vcFileName[0] == '/') {
 		kPrintf("Full path access\n");
 		iLength = 1;
 		iPathLength = 0;
