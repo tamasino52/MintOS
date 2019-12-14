@@ -1741,7 +1741,7 @@ static void kCdDir(const char* pcParameterBuffer)
 	}
 
 	//절대경로처리
-	if (kMemCmp(vcFileName, "/", 1) == 0) {
+	if (kMemCmp(vcFileName, '/', 1) == 0) {
 		kPrintf("Full path access\n");
 		iLength = 1;
 		iPathLength = 0;
@@ -1808,7 +1808,7 @@ static void kCdDir(const char* pcParameterBuffer)
 			kPrintf("RootDir Open Success\n");
 			return;
 		}
-		kPrintf("Dir Fail\n");
+		kPrintf("Parent Dir Fail\n");
 	}
 	if (kMemCmp(vcFileName, ".", 1) == 0)
 	{
@@ -1818,7 +1818,7 @@ static void kCdDir(const char* pcParameterBuffer)
 
 	if (kOpenDir(vcFileName) == -1)
 	{
-		kPrintf("Dir Fail\n");
+		kPrintf("Open Dir Fail\n");
 		return;
 	}
 
