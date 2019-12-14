@@ -1720,16 +1720,70 @@ static void kCdDir(const char* pcParameterBuffer)
 {
 	PARAMETERLIST stList;
 	char vcFileName[50];
+	char vcPathName[50];
 	int iLength;
+	int iPathLength;
 	DWORD dwCluster;
 	DIRECTORYENTRY stEntry;
 	int i;
+	int iCurrentDirIndex;
 	FILE* pstFile;
 
 	kInitializeParameter(&stList, pcParameterBuffer);
 	iLength = kGetNextParameter(&stList, vcFileName);
 	vcFileName[iLength] = '\0';
-	if ((iLength > (FILESYSTEM_MAXFILENAMELENGTH - 1)) || (iLength == 0))
+
+	if (iLength == 0)
+	{
+		kPrintf("There is no path to move, please input correct path\n");
+		return;
+	}
+
+	//절대경로처리
+	if (kMemCmp(vcFileName, "/", 1) == 0) {
+		iLength = 1;
+		iPathLength = 0;
+		//먼저 루트디렉토리로 이동
+		do {
+			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
+			if (kCloseDir() == -1)
+			{
+				kPrintf("Root directory access complete\n")
+				break;
+			}
+		} while (iCurrentDirIndex != gs_stFileSystemManager.pstDirIndex);
+
+		while (true)
+		{
+			if (vcFileName[iLength] == "/")
+			{
+				vcPathName[iPathLength] = "\0";
+				if (kOpenDir(vcPathName) == -1) {
+					kPrintf("Wrong path error\n")
+						return;
+				}
+				kPrintf("Path access complete\n")
+				iPathLength = 0;
+				iLength++;
+			}
+			else if (vcFileName[iLength] == "\0")
+			{
+				vcPathName[iPathLength] = "\0";
+				if (kOpenDir(vcPathName) == -1) {
+					kPrintf("Wrong path error\n")
+						return;
+				}
+				return;
+			}
+			else
+			{
+				vcPathName[iPathLength++] = vcFileName[iLength++];
+			}
+		}
+	}
+
+	//상대경로처리
+	if (iLength > (FILESYSTEM_MAXFILENAMELENGTH - 1))
 	{
 		kPrintf("Too Long or Too Short File Name\n");
 		return;
