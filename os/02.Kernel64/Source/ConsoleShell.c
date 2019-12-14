@@ -1758,7 +1758,7 @@ static void kCdDir(const char* pcParameterBuffer)
 
 		// 루트디렉토리로만 이동하고 끝낼 경우 여기서 걸러짐
 		if (vcFileName[1] == '\0') {
-			kPrintf("Root Directory Access");
+			kPrintf("Root Directory Access\n");
 			return;
 		}
 
