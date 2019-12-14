@@ -1748,21 +1748,21 @@ static void kCdDir(const char* pcParameterBuffer)
 			iCurrentDirIndex = gs_stFileSystemManager.pstDirIndex;
 			if (kCloseDir() == -1)
 			{
-				kPrintf("Root directory access complete\n")
+				kPrintf("Root directory access complete\n");
 				break;
 			}
 		} while (iCurrentDirIndex != gs_stFileSystemManager.pstDirIndex);
 
-		while (true)
+		while (1)
 		{
 			if (vcFileName[iLength] == "/")
 			{
 				vcPathName[iPathLength] = "\0";
 				if (kOpenDir(vcPathName) == -1) {
-					kPrintf("Wrong path error\n")
+					kPrintf("Wrong path error\n");
 						return;
 				}
-				kPrintf("Path access complete\n")
+				kPrintf("Path access complete\n");
 				iPathLength = 0;
 				iLength++;
 			}
@@ -1770,7 +1770,7 @@ static void kCdDir(const char* pcParameterBuffer)
 			{
 				vcPathName[iPathLength] = "\0";
 				if (kOpenDir(vcPathName) == -1) {
-					kPrintf("Wrong path error\n")
+					kPrintf("Wrong path error\n");
 						return;
 				}
 				return;
