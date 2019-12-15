@@ -4,7 +4,7 @@
 #include "DynamicMemory.h"
 #include "Task.h"
 #include "Utility.h"
-
+#include "RTC.h"
 
 static BYTE gs_vbTempBuffer[ FILESYSTEM_SECTORSPERCLUSTER * 512 ];
 
@@ -145,6 +145,8 @@ BOOL kFormat( void )
 	dot.dwStartClusterIndex = 0;
 	dot.dwFileSize = 0;
 	dot.dirClusterIndex = 0;	 
+	kReadRTCTime(&(dot.hour),&dot.min,&dot.sec);
+	kReadRTCDate(&dot.year,&dot.month,&dot.day,&dot.week);
 	kSetDirectoryEntryData(0,0,&dot);
 
 	kMemCpy(dotDot.vcFileName, "/" , 1);
@@ -152,6 +154,8 @@ BOOL kFormat( void )
 	dotDot.dwStartClusterIndex = 0;	
  	dotDot.dwFileSize = 0;
 	dotDot.dirClusterIndex = 0;	 
+	kReadRTCDate(&dotDot.year,&dotDot.month,&dotDot.day,&dotDot.week);
+	kReadRTCTime(&(dotDot.hour),&dotDot.min,&dotDot.sec);
 	kSetDirectoryEntryData(0,1,&dotDot);
 
     	kUnlock( &( gs_stFileSystemManager.stMutex ) );
@@ -328,7 +332,7 @@ int kFindFreeDirectoryEntry( void )
     	return -1;
 }
 
- BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry )
+static BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry )
 {
    	DIRECTORYENTRY* pstDirEntry;
     
@@ -401,36 +405,6 @@ int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry )
     	}
     	return -1;
 }
-
-// 디렉토리 인덱스로 찾는 함수
-int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry)
-{
-	DIRECTORYENTRY* pstRootEntry;
-	int i;
-	int iLength;
-
-	if (gs_stFileSystemManager.bMounted == FALSE)
-	{
-		return -1;
-	}
-
-	if (kReadCluster(gs_stFileSystemManager.pstDirIndex, gs_vbTempBuffer) == FALSE)
-	{
-		return -1;
-	}
-
-	pstRootEntry = (DIRECTORYENTRY*)gs_vbTempBuffer;
-	for (i = 2; i < FILESYSTEM_MAXDIRECTORYENTRYCOUNT; i++)
-	{
-		if (pstRootEntry[i].dwStartClusterIndex == dirIndex)
-		{
-			kMemCpy(pstEntry, pstRootEntry + i, sizeof(DIRECTORYENTRY));
-			return i;
-		}
-	}
-	return -1;
-}
-
 
 void kGetFileSystemInformation( FILESYSTEMMANAGER* pstManager )
 {
@@ -535,6 +509,10 @@ BOOL kCreateDir( const char* pcDirName )
 	dot.bType = FILESYSTEM_TYPE_DIRECTORY;
 	dot.dirClusterIndex = gs_stFileSystemManager.pstDirIndex;
     
+	kReadRTCTime(&(dot.hour),&dot.min,&dot.sec);
+	kReadRTCDate(&dot.year,&dot.month,&dot.day,&dot.week);
+	
+
     	if( kSetDirectoryEntryData( gs_stFileSystemManager.pstDirIndex, piDirectoryEntryIndex, &dot ) == FALSE )
     	{
         	kSetClusterLinkData( dwCluster, FILESYSTEM_FREECLUSTER );
@@ -548,6 +526,8 @@ BOOL kCreateDir( const char* pcDirName )
 	dotDot.dwFileSize = 0;
 	dotDot.bType = FILESYSTEM_TYPE_DIRECTORY;
 	
+	kReadRTCTime(&(dotDot.hour),&dotDot.min,&dotDot.sec);
+	kReadRTCDate(&dotDot.year,&dotDot.month,&dotDot.day,&dotDot.week);
 	if( kSetDirectoryEntryData( dwCluster, 1, &dotDot ) == FALSE )
     	{
         	kSetClusterLinkData( dwCluster, FILESYSTEM_FREECLUSTER );
@@ -611,9 +591,12 @@ FILE* kOpenFile( const char* pcFileName, const char* pcMode )
     	}
     
     	kLock( &( gs_stFileSystemManager.stMutex ) );
-
+	
     	iDirectoryEntryOffset = kFindDirectoryEntry( pcFileName, &stEntry );
-   	if( iDirectoryEntryOffset == -1 )
+   	
+	kReadRTCTime(&(stEntry.hour),&stEntry.min,&stEntry.sec);
+	kReadRTCDate(&stEntry.year,&stEntry.month,&stEntry.day,&stEntry.week);
+	if( iDirectoryEntryOffset == -1 )
     	{
         	if( pcMode[ 0 ] == 'r' )
         	{
@@ -1119,54 +1102,6 @@ int kRemoveFile( const char* pcFileName )
     	return 0;
 }
 
-int kRenameFile(const char* pcFileName, const char* pcNewFileName)
-{
-	DIRECTORYENTRY stEntry;
-	int pstDirIndex;
-	int iDirectoryEntryOffset;
-	int iFileNameLength, iNewFileNameLength;
-	iNewFileNameLength = kStrLen(pcNewFileName);
-	iFileNameLength = kStrLen(pcFileName);
-	if ((iFileNameLength > (sizeof(stEntry.vcFileName) - 1)) ||
-		(iFileNameLength == 0))
-	{
-		return NULL;
-	}
-
-	kLock(&(gs_stFileSystemManager.stMutex));
-
-	iDirectoryEntryOffset = kFindDirectoryEntry(pcFileName, &stEntry);
-
-	if (iDirectoryEntryOffset == -1)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-	pstDirIndex = stEntry.dirClusterIndex;
-	if (kIsFileOpened(&stEntry) == TRUE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	if (kFreeClusterUntilEnd(stEntry.dwStartClusterIndex) == FALSE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	kMemCpy(&stEntry.vcFileName, pcNewFileName, iNewFileNameLength + 1);
-	
-	if (kSetDirectoryEntryData(pstDirIndex, iDirectoryEntryOffset, &stEntry) == FALSE)
-	{
-		kUnlock(&(gs_stFileSystemManager.stMutex));
-		return -1;
-	}
-
-	kUnlock(&(gs_stFileSystemManager.stMutex));
-	return 0;
-}
-
 DIR* kOpenDirectory( void )
 {
     	DIR* pstDirectory;
@@ -1198,7 +1133,6 @@ DIR* kOpenDirectory( void )
         	return NULL;
         
     	}
-    
     	pstDirectory->bType = FILESYSTEM_TYPE_DIRECTORY;
     	pstDirectory->stDirectoryHandle.iCurrentOffset = 0;
     	pstDirectory->stDirectoryHandle.pstDirectoryBuffer = pstDirectoryBuffer;
@@ -1368,6 +1302,7 @@ int kRemoveAllFile( int dirIndex )
 	kMemSet( pstEntry, 0, sizeof( pstEntry ) );
     	
     	return 0;
+	
 }
 
 

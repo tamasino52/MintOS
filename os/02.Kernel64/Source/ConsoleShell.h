@@ -91,5 +91,4 @@ static void kCdDir( const char* pcParameterBuffer );
 static void kTestFileIO( const char* pcParameterBuffer );
 static void kMakeDir( const char* pcParameterBuffer );
 static void krmDir( const char* pcParameterBuffer );
-
 #endif /*__CONSOLESHELL_H__*/

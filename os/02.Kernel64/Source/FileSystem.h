@@ -88,6 +88,13 @@ typedef struct kDirectoryEntryStruct
 {
     	char vcFileName[ FILESYSTEM_MAXFILENAMELENGTH ];
 	BYTE bType;
+	BYTE min;
+	BYTE hour;
+	BYTE sec;
+	WORD year;
+	BYTE month;
+	BYTE day;
+	BYTE week;
 	DWORD dirClusterIndex;
     	DWORD dwFileSize;
     	DWORD dwStartClusterIndex;
@@ -155,12 +162,12 @@ static BOOL kWriteCluster( DWORD dwOffset, BYTE* pbBuffer );
 static DWORD kFindFreeCluster( void );
 static BOOL kSetClusterLinkData( DWORD dwClusterIndex, DWORD dwData );
 static BOOL kGetClusterLinkData( DWORD dwClusterIndex, DWORD* pdwData );
-int kFindFreeDirectoryEntry( void );
-BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry );
+static int kFindFreeDirectoryEntry( void );
+static BOOL kSetDirectoryEntryData( int dirIndex ,int iIndex, DIRECTORYENTRY* pstEntry );
 BOOL kGetDirectoryEntryData( int dirIndex, int iIndex, DIRECTORYENTRY* pstEntry );
 int kFindDirectoryEntry( const char* pcFileName, DIRECTORYENTRY* pstEntry );
 void kGetFileSystemInformation( FILESYSTEMMANAGER* pstManager );
-int kFindDirectoryEntryByIndex(int  dirIndex, DIRECTORYENTRY* pstEntry);
+
 
 FILE* kOpenFile( const char* pcFileName, const char* pcMode );
 DWORD kReadFile( void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFile );
@@ -168,7 +175,6 @@ DWORD kWriteFile( const void* pvBuffer, DWORD dwSize, DWORD dwCount, FILE* pstFi
 int kSeekFile( FILE* pstFile, int iOffset, int iOrigin );
 int kCloseFile( FILE* pstFile );
 int kRemoveFile( const char* pcFileName );
-int kRenameFile(const char* pcFileName, const char* pcNewFileName);
 DIR* kOpenDirectory( void );
 struct kDirectoryEntryStruct* kReadDirectory( DIR* pstDirectory, int* offset );
 void kRewindDirectory( DIR* pstDirectory );
